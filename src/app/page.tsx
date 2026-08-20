@@ -14,7 +14,6 @@ import { Testimonials } from "@/components/sections/testimonials";
 import { TrustBar } from "@/components/sections/trust-bar";
 import { WhyChooseUs } from "@/components/sections/why-choose-us";
 import { FloatingWhatsApp } from "@/components/ui/floating-whatsapp";
-import { MobileCallBar } from "@/components/ui/mobile-call-bar";
 import { getSiteContent } from "@/backend/content-repository";
 import { siteConfig } from "@/lib/site-config";
 
@@ -66,7 +65,6 @@ export default async function HomePage() {
       </main>
       <Footer business={content.business} navigation={content.navigation} />
       <FloatingWhatsApp business={content.business} />
-      <MobileCallBar business={content.business} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
     </>
   );

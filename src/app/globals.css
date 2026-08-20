@@ -98,10 +98,11 @@ img { max-width: 100%; }
 .skip-link { position: fixed; z-index: 100; top: 12px; left: 12px; transform: translateY(-150%); border-radius: 999px; background: var(--ink); color: white; padding: 12px 18px; font-weight: 800; transition: transform 180ms ease; }
 .skip-link:focus { transform: translateY(0); }
 :focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+.header-quote-button { border: 1px solid #ea580c; background: #f97316 !important; color: #ffffff !important; box-shadow: 0 8px 22px rgb(249 115 22 / .2); }
+.header-quote-button:hover { background: #df5f0e !important; border-color: #c9500a; }
 
 @media (max-width: 640px) {
   .site-container { width: min(100% - 28px, 1180px); }
-  body { padding-bottom: 64px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

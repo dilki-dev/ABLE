@@ -27,7 +27,8 @@ export function MobileMenu({ business, navigation, homeLinks = false }: { busine
             {navigation.map((item) => (
               <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} onClick={() => setOpen(false)} className="border-b border-[#eeeeea] py-3.5 text-base font-bold">{item.label}</a>
             ))}
-            <a href={config.phoneHref} className="mt-5 rounded-xl bg-[#f97316] px-5 py-4 text-center text-sm font-extrabold text-white">Call {business.phoneDisplay}</a>
+            <a href={homeLinks ? "/#contact" : "#contact"} onClick={() => setOpen(false)} className="header-quote-button mt-5 rounded-xl px-5 py-4 text-center text-sm font-extrabold">Request a quote</a>
+            <a href={config.phoneHref} className="mt-2 rounded-xl border border-[#e7e7e3] bg-white px-5 py-4 text-center text-sm font-extrabold">Call {business.phoneDisplay}</a>
           </nav>
         </div>
       ) : null}
