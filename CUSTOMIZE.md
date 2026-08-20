@@ -1,77 +1,62 @@
 # How to customize the ABLE website
 
-You do not need to understand all of Next.js to change this landing page. Use this guide to find the correct file.
+You do not need to understand all of Next.js to update this site. Each visible section has its own clearly named file.
 
-## Change words, links, statistics, or list items
+## Most common changes
 
-Open:
+- Business details, phone links, address, WhatsApp message, map and live URL: `src/lib/site-config.ts`
+- Services, project cards, process steps, areas and FAQs: `src/data/site-content.ts`
+- Homepage section order: `src/app/page.tsx`
+- Global colours and shared sizing: `src/app/globals.css`
+- Search title, description and social sharing settings: `src/app/layout.tsx`
 
-`src/data/landing-page.ts`
+## Visible sections
 
-This single file contains the brand name, navigation, hero text, services, process steps, case-study details, testimonial, email address, and social links.
+| Website area | File |
+| --- | --- |
+| Header | `src/components/layout/header.tsx` |
+| Mobile menu | `src/components/layout/mobile-menu.tsx` |
+| Logo placeholder | `src/components/layout/logo.tsx` |
+| Hero | `src/components/sections/hero.tsx` |
+| Trust bar | `src/components/sections/trust-bar.tsx` |
+| Services | `src/components/sections/services.tsx` |
+| About | `src/components/sections/about.tsx` |
+| Why choose us | `src/components/sections/why-choose-us.tsx` |
+| Project gallery | `src/components/sections/projects.tsx` |
+| Process | `src/components/sections/process.tsx` |
+| Testimonials placeholder | `src/components/sections/testimonials.tsx` |
+| Service areas | `src/components/sections/service-areas.tsx` |
+| FAQ | `src/components/sections/faq.tsx` |
+| Map | `src/components/sections/map-section.tsx` |
+| Quote/contact | `src/components/sections/contact.tsx` |
+| Final call to action | `src/components/sections/final-cta.tsx` |
+| Footer | `src/components/layout/footer.tsx` |
 
-## Change the order of homepage sections
+## Images
 
-Open:
+The current generated placeholders are in `public/images/`. Keep the filenames when replacing them and the website will update automatically.
 
-`src/app/page.tsx`
+- `hero-property-maintenance.png`
+- `about-able-team.png`
+- `project-bathroom-fitting.png`
+- `project-exterior-painting.png`
+- `project-kitchen-carpentry.png`
 
-The components appear in the same order as the sections on the page. Move a component line to move that whole section.
+Use real ABLE project photos only with permission. Update the matching project title, service and location in `src/data/site-content.ts` at the same time.
 
-## Change a visible section
+## Important launch replacements
 
-Open the matching file in:
+1. Replace the CSS logo mark in `src/components/layout/logo.tsx` with the final logo asset.
+2. Verify the secondary number `+713422304`; it is deliberately not a clickable call link because its international format is unclear.
+3. Connect the quote form in `src/components/ui/contact-form.tsx` to a real email service, CRM or server action. It currently validates but truthfully does not send.
+4. Replace project placeholders with verified project photos and facts.
+5. Add only genuine, permission-approved customer reviews.
+6. Set `NEXT_PUBLIC_SITE_URL` to the final custom domain in Vercel after the domain is connected.
+7. Add real social profile links in the footer when they are available.
 
-`src/components/sections/`
-
-| Website section | Component file | Style file |
-| --- | --- | --- |
-| Hero and dashboard preview | `hero-section.tsx` | `hero-section.module.css` |
-| Client names | `logo-cloud.tsx` | `logo-cloud.module.css` |
-| Services | `services-section.tsx` | `services-section.module.css` |
-| Three-step process | `process-section.tsx` | `process-section.module.css` |
-| Featured project | `project-spotlight.tsx` | `project-spotlight.module.css` |
-| Client quote | `testimonial-section.tsx` | `testimonial-section.module.css` |
-| Final contact block | `final-cta-section.tsx` | `final-cta-section.module.css` |
-
-## Change the header or footer
-
-Open:
-
-- `src/components/layout/site-header.tsx`
-- `src/components/layout/site-footer.tsx`
-
-Their matching `.module.css` files control their appearance.
-
-## Change global colors and sizing
-
-Open `src/app/globals.css` and edit the values under `:root`:
-
-```css
---ink: #101116;
---paper: #f5f1e8;
---lime: #c9ff58;
---violet: #6c5ce7;
---orange: #ff7657;
-```
-
-These named color variables are reused throughout the website, so changing one updates every component that uses it.
-
-## Change the browser title and search description
-
-Open `src/app/layout.tsx` and edit the `metadata` object.
-
-## Add images
-
-Place image files in `public/`, then reference them from a component as `/your-image.jpg`. Use the Next.js `Image` component when adding content images.
-
-## Before publishing
-
-Run:
+## Check before publishing
 
 ```bash
 npm run lint
 npm run build
 ```
-
-Only publish after both commands pass.

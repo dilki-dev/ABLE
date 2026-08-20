@@ -1,6 +1,6 @@
-# ABLE website
+# ABLE Property Maintenance website
 
-A modular Next.js landing page built so each visible part of the website is easy to find and edit.
+A premium, modular Next.js landing page for a Sri Lankan property-maintenance business. The site uses the App Router, TypeScript, Tailwind CSS, Lucide icons, Motion animations and local image assets.
 
 ## Start locally
 
@@ -15,25 +15,17 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```text
 src/
-├── app/
-│   ├── globals.css          Global colors, spacing, and base styles
-│   ├── layout.tsx           SEO title, description, and page shell
-│   └── page.tsx             Homepage section order only
-├── components/
-│   ├── layout/              Header and footer
-│   ├── sections/            One file per visible landing-page section
-│   └── ui/                  Small reusable elements such as buttons
-└── data/
-    └── landing-page.ts      All editable text, links, stats, and lists
+|-- app/          Page composition, global CSS, metadata, robots and sitemap
+|-- components/
+|   |-- layout/   Header, mobile menu, logo and footer
+|   |-- sections/ One file for each visible homepage section
+|   `-- ui/       Reusable cards, icons, form, animation and floating actions
+|-- data/         Editable service and section content
+`-- lib/          Business details and links
+public/images/    Project-local generated placeholder photography
 ```
 
-Each component has a matching `.module.css` file beside it. For example:
-
-- `hero-section.tsx` contains the hero markup.
-- `hero-section.module.css` contains only the hero styles.
-- `landing-page.ts` contains the hero text.
-
-See [CUSTOMIZE.md](./CUSTOMIZE.md) for a beginner-friendly editing guide.
+The homepage order is intentionally easy to read in `src/app/page.tsx`. See [CUSTOMIZE.md](./CUSTOMIZE.md) for the exact file to edit for each website element.
 
 ## Quality checks
 
@@ -42,4 +34,4 @@ npm run lint
 npm run build
 ```
 
-The `main` branch is connected to Vercel. Pushing a verified commit to `main` triggers a production deployment.
+The `main` branch is connected to the Vercel project at `ableksjnvks.vercel.app`. A verified push to `main` triggers the production deployment.
