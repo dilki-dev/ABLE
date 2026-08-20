@@ -71,3 +71,14 @@ export async function updateEnquiry(id: string, status: EnquiryStatus, notes: st
     WHERE id = ${id}
   `;
 }
+
+export async function deleteEnquiry(id: string) {
+  await ensureDatabaseSchema();
+  const sql = getDatabase();
+  const rows = await sql`
+    DELETE FROM enquiries
+    WHERE id = ${id}
+    RETURNING id
+  `;
+  return rows.length > 0;
+}

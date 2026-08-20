@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { Mail, Phone, Save, Search } from "lucide-react";
-import { updateEnquiryAction } from "@/app/admin/actions";
+import { Mail, Phone, Save, Search, Trash2 } from "lucide-react";
+import { deleteEnquiryAction, updateEnquiryAction } from "@/app/admin/actions";
 import type { Enquiry } from "@/backend/enquiries";
 import { initialActionState } from "./action-state";
 
@@ -29,6 +29,7 @@ export function EnquiriesPanel({ enquiries, databaseReady, error }: { enquiries:
 
 function EnquiryCard({ enquiry }: { enquiry: Enquiry }) {
   const [state, action, pending] = useActionState(updateEnquiryAction, initialActionState);
+  const [deleteState, deleteAction, deleting] = useActionState(deleteEnquiryAction, initialActionState);
   const statusStyles: Record<Enquiry["status"], string> = { new: "bg-sky-100 text-sky-800", contacted: "bg-violet-100 text-violet-800", quoted: "bg-amber-100 text-amber-900", closed: "bg-green-100 text-green-800", spam: "bg-red-100 text-red-800" };
   return (
     <article className="rounded-xl border border-[#e7e7e3] bg-[#fafaf8] p-4">
@@ -39,7 +40,14 @@ function EnquiryCard({ enquiry }: { enquiry: Enquiry }) {
         <input type="hidden" name="id" value={enquiry.id} />
         <select name="status" defaultValue={enquiry.status} className="min-h-11 w-full rounded-lg border border-[#d9d9d4] bg-white px-3 py-2.5 text-base font-bold sm:text-sm"><option value="new">New</option><option value="contacted">Contacted</option><option value="quoted">Quoted</option><option value="closed">Closed</option><option value="spam">Spam</option></select>
         <textarea name="notes" defaultValue={enquiry.admin_notes} rows={3} placeholder="Private admin notes" className="w-full rounded-lg border border-[#d9d9d4] bg-white px-3 py-2.5 text-base outline-none focus:border-sky-400 sm:text-sm" />
-        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between"><span role="status" className={`text-xs ${state.status === "error" ? "text-red-700" : "text-green-700"}`}>{state.message}</span><button disabled={pending} className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-[#111111] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"><Save aria-hidden="true" className="h-3.5 w-3.5" />{pending ? "Saving…" : "Update"}</button></div>
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between"><span role="status" className={`text-xs ${state.status === "error" ? "text-red-700" : "text-green-700"}`}>{state.message}</span><button disabled={pending || deleting} className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-[#111111] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"><Save aria-hidden="true" className="h-3.5 w-3.5" />{pending ? "Saving…" : "Update"}</button></div>
+      </form>
+      <form action={deleteAction} className="mt-2 border-t border-[#e7e7e3] pt-3">
+        <input type="hidden" name="id" value={enquiry.id} />
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <span role="status" className="text-xs text-red-700">{deleteState.message}</span>
+          <button type="submit" disabled={pending || deleting} onClick={(event) => { if (!window.confirm(`Delete the quote enquiry from ${enquiry.name}? This cannot be undone.`)) event.preventDefault(); }} className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 transition hover:border-red-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"><Trash2 aria-hidden="true" className="h-3.5 w-3.5" />{deleting ? "Deleting…" : "Delete enquiry"}</button>
+        </div>
       </form>
     </article>
   );
