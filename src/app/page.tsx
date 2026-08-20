@@ -22,21 +22,27 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   const content = await getSiteContent();
-  const localBusinessSchema = {
+  const absoluteImageUrl = content.hero.image.startsWith("http") ? content.hero.image : `${siteConfig.siteUrl}${content.hero.image}`;
+  const structuredData = {
     "@context": "https://schema.org",
-    "@type": "HomeAndConstructionBusiness",
-    name: content.business.name,
-    url: siteConfig.siteUrl,
-    description: content.business.description,
-    telephone: content.business.phoneRaw,
-    email: content.business.email,
-    address: { "@type": "PostalAddress", streetAddress: content.business.address, addressCountry: "LK" },
-    areaServed: [{ "@type": "City", name: "Colombo" }, { "@type": "Country", name: "Sri Lanka" }],
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: "Property maintenance services",
-      itemListElement: content.services.map((service) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: service.title, description: service.text } })),
-    },
+    "@graph": [
+      { "@type": "WebSite", "@id": `${siteConfig.siteUrl}/#website`, url: siteConfig.siteUrl, name: content.business.name, description: content.business.description, inLanguage: "en-LK", publisher: { "@id": `${siteConfig.siteUrl}/#business` } },
+      {
+        "@type": "HomeAndConstructionBusiness",
+        "@id": `${siteConfig.siteUrl}/#business`,
+        name: content.business.name,
+        url: siteConfig.siteUrl,
+        image: absoluteImageUrl,
+        description: content.business.description,
+        telephone: content.business.phoneRaw,
+        email: content.business.email,
+        address: { "@type": "PostalAddress", streetAddress: content.business.address, addressCountry: "LK" },
+        areaServed: [{ "@type": "City", name: "Colombo" }, { "@type": "Country", name: "Sri Lanka" }],
+        contactPoint: { "@type": "ContactPoint", telephone: content.business.phoneRaw, email: content.business.email, contactType: "customer service", areaServed: "LK", availableLanguage: ["English"] },
+        hasOfferCatalog: { "@type": "OfferCatalog", name: "Property maintenance services", itemListElement: content.services.map((service) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: service.title, description: service.text, areaServed: "Sri Lanka" } })) },
+      },
+      { "@type": "FAQPage", "@id": `${siteConfig.siteUrl}/#faq`, mainEntity: content.faqs.map((faq) => ({ "@type": "Question", name: faq.question, acceptedAnswer: { "@type": "Answer", text: faq.answer } })) },
+    ],
   };
 
   return (
@@ -61,7 +67,7 @@ export default async function HomePage() {
       <Footer business={content.business} navigation={content.navigation} />
       <FloatingWhatsApp business={content.business} />
       <MobileCallBar business={content.business} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
     </>
   );
 }

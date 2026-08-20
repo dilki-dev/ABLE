@@ -2,8 +2,9 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { Logo } from "./logo";
 import type { SiteContent } from "@/cms/content-schema";
 import { publicConfig } from "@/cms/public-config";
+import Link from "next/link";
 
-export function Footer({ business, navigation }: { business: SiteContent["business"]; navigation: SiteContent["navigation"] }) {
+export function Footer({ business, navigation, homeLinks = false }: { business: SiteContent["business"]; navigation: SiteContent["navigation"]; homeLinks?: boolean }) {
   const config = publicConfig(business);
   return (
     <footer className="bg-[#0d0d0d] pb-8 pt-16 text-white">
@@ -16,7 +17,7 @@ export function Footer({ business, navigation }: { business: SiteContent["busine
         <div>
           <h2 className="text-xs font-extrabold uppercase tracking-[.18em] text-white/45">Explore</h2>
           <nav aria-label="Footer navigation" className="mt-5 grid grid-cols-2 gap-3">
-            {navigation.map((item) => <a key={item.href} href={item.href} className="text-sm font-semibold text-white/70 hover:text-white">{item.label}</a>)}
+            {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="text-sm font-semibold text-white/70 hover:text-white">{item.label}</a>)}
           </nav>
         </div>
         <div>
@@ -32,7 +33,7 @@ export function Footer({ business, navigation }: { business: SiteContent["busine
       </div>
       <div className="site-container mt-7 flex flex-col gap-3 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} {business.name}. All rights reserved.</p>
-        <div className="flex flex-wrap gap-x-4 gap-y-2"><p>Serving {business.coverage}.</p><span>Privacy page placeholder</span><span>Terms page placeholder</span></div>
+        <div className="flex flex-wrap gap-x-4 gap-y-2"><p>Serving {business.coverage}.</p><Link href="/privacy" className="hover:text-white">Privacy</Link><Link href="/terms" className="hover:text-white">Terms</Link></div>
       </div>
     </footer>
   );

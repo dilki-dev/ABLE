@@ -12,6 +12,7 @@ type PathPart = string | number;
 type CollectionKey = "navigation" | "trustItems" | "services" | "projects" | "processSteps" | "faqs";
 type NestedCollectionPath = ["whyChoose", "reasons"] | ["testimonials", "items"];
 type StringListPath = ["hero", "bullets"] | ["about", "bullets"] | ["areas", "items"];
+type LegalDocumentKey = "privacy" | "terms";
 type FieldDefinition = { key: string; label: string; multiline?: boolean; options?: readonly string[]; image?: boolean };
 const iconOptions = ["droplets", "zap", "paint", "wrench", "bath", "chef", "layers", "hammer", "leaf", "building", "siren", "key", "clock", "map", "shield", "message"] as const;
 
@@ -102,6 +103,22 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
     });
   }
 
+  function removeLegalSection(documentKey: LegalDocumentKey, index: number) {
+    setContent((current) => {
+      const copy = structuredClone(current);
+      copy.legal[documentKey].sections.splice(index, 1);
+      return copy;
+    });
+  }
+
+  function addLegalSection(documentKey: LegalDocumentKey) {
+    setContent((current) => {
+      const copy = structuredClone(current);
+      copy.legal[documentKey].sections.push({ heading: "New section", body: "Add clear and accurate policy information." });
+      return copy;
+    });
+  }
+
   function setAllSections(open: boolean) {
     document.querySelectorAll<HTMLDetailsElement>("[data-cms-section]").forEach((section) => { section.open = open; });
   }
@@ -186,6 +203,8 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
       <MapEditor value={content.map} fallbackEmbedUrl={publicConfig(content.business).mapEmbedUrl} onChange={(key, value) => updatePath(["map", key], value)} />
       <CopyEditor title="Contact section" value={content.contact} onChange={(key, value) => updatePath(["contact", key], value)} />
       <CopyEditor title="Final call to action" value={content.finalCta} onChange={(key, value) => updatePath(["finalCta", key], value)} />
+      <LegalEditor title="Privacy page" value={content.legal.privacy} onChange={(key, value) => updatePath(["legal", "privacy", key], value)} onSectionChange={(index, key, value) => updatePath(["legal", "privacy", "sections", index, key], value)} onSectionRemove={(index) => removeLegalSection("privacy", index)} onSectionAdd={() => addLegalSection("privacy")} />
+      <LegalEditor title="Terms page" value={content.legal.terms} onChange={(key, value) => updatePath(["legal", "terms", key], value)} onSectionChange={(index, key, value) => updatePath(["legal", "terms", "sections", index, key], value)} onSectionRemove={(index) => removeLegalSection("terms", index)} onSectionAdd={() => addLegalSection("terms")} />
     </form>
   );
 }
@@ -266,6 +285,10 @@ function MapEditor({ value, fallbackEmbedUrl, onChange }: { value: SiteContent["
   }
 
   return <EditorCard title="Map section" description="Set the heading and paste the real Google Maps iframe for this location."><CopyFields value={value} keys={["title", "description"]} multiline={["description"]} onChange={onChange} /><div><label className="block text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">Google Maps iframe or embed URL<textarea value={draft} onChange={(event) => { setDraft(event.target.value); setStatus(""); }} rows={4} placeholder={'<iframe src="https://www.google.com/maps/embed?...">'} className="mt-2 min-h-28 w-full rounded-xl border border-[#d9d9d4] bg-white px-3.5 py-3 font-mono text-sm normal-case tracking-normal outline-none focus:border-[#38bdf8] focus:ring-4 focus:ring-sky-100" /></label><div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center"><button type="button" onClick={applyMap} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#111111] px-4 py-3 text-sm font-extrabold text-white"><MapPinned aria-hidden="true" className="h-4 w-4" />Apply Google map</button>{value.embedUrl ? <button type="button" onClick={() => { setDraft(""); onChange("embedUrl", ""); setStatus("Custom map cleared. The business-address map will be used after publishing."); }} className="min-h-11 rounded-xl border border-[#d9d9d4] px-4 py-3 text-sm font-bold">Use business address</button> : null}</div>{status ? <p role="status" className={`mt-3 text-xs font-semibold leading-5 ${status.startsWith("Paste") ? "text-red-700" : "text-green-700"}`}>{status}</p> : null}</div><div className="overflow-hidden rounded-2xl border border-[#d9d9d4] bg-[#f1f1ed]"><iframe title="Google Maps CMS preview" src={previewUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="min-h-[320px] w-full border-0" /></div></EditorCard>;
+}
+
+function LegalEditor({ title, value, onChange, onSectionChange, onSectionRemove, onSectionAdd }: { title: string; value: SiteContent["legal"]["privacy"]; onChange: (key: string, value: string) => void; onSectionChange: (index: number, key: string, value: string) => void; onSectionRemove: (index: number) => void; onSectionAdd: () => void }) {
+  return <EditorCard title={title} description="Edit the public legal page. Review material changes with a qualified adviser."><CopyFields value={value} keys={["title", "intro", "lastUpdated"]} multiline={["intro"]} onChange={onChange} /><SimpleNestedCollection title="Page sections" items={value.sections} maxItems={20} fields={[{ key: "heading", label: "Heading" }, { key: "body", label: "Content", multiline: true }]} onChange={onSectionChange} onRemove={onSectionRemove} onAdd={onSectionAdd} /></EditorCard>;
 }
 
 function CopyEditor({ title, value, onChange }: { title: string; value: Record<string, unknown>; onChange: (key: string, value: string) => void }) {

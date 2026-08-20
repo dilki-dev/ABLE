@@ -10,7 +10,7 @@ export const siteConfig = {
   phoneRaw: "+94713043444",
   secondaryPhoneDisplay: "+713422304",
   email: "hello@ablepropertymaintenance.lk",
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://ableksjnvks.vercel.app",
+  siteUrl: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://ableksjnvks.vercel.app").replace(/\/+$/, ""),
   whatsappUrl:
     "https://wa.me/94713043444?text=Hello%20ABLE%2C%20I%27d%20like%20to%20request%20a%20property%20maintenance%20quote.",
   mapsUrl:

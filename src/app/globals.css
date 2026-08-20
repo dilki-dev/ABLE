@@ -7,6 +7,15 @@
   --soft: #f7f7f5;
   --line: #e7e7e3;
   --muted: #64645f;
+  color-scheme: light;
+}
+
+html.dark {
+  --ink: #f5f7f6;
+  --soft: #171a18;
+  --line: #343936;
+  --muted: #b8c0bb;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -20,6 +29,59 @@ body {
   font-family: var(--font-manrope), Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+html.dark body { background: #101211; color: #f5f7f6; }
+html.dark [class~="bg-white"] { background-color: #191c1a !important; }
+html.dark [class~="bg-white/95"] { background-color: rgb(25 28 26 / .95) !important; }
+html.dark [class~="bg-[#f4f4f1]"],
+html.dark [class~="bg-[#f7f7f5]"],
+html.dark [class~="bg-[#fafaf8]"] { background-color: #121513 !important; }
+html.dark [class~="bg-[#f1f1ed]"] { background-color: #202421 !important; }
+html.dark [class~="text-[#111111]"],
+html.dark [class~="text-[#292924]"] { color: #f5f7f6 !important; }
+html.dark [class~="text-[#4d4d48]"],
+html.dark [class~="text-[#4f4f4a]"],
+html.dark [class~="text-[#64645f]"],
+html.dark [class~="text-[#777771]"],
+html.dark [class~="text-[#888880]"],
+html.dark [class~="text-[#8a8a84]"],
+html.dark [class~="text-[#999990]"] { color: #b8c0bb !important; }
+html.dark [class~="border-[#cacac4]"],
+html.dark [class~="border-[#bcbcb5]"],
+html.dark [class~="border-[#d9d9d4]"],
+html.dark [class~="border-[#dfdfda]"],
+html.dark [class~="border-[#e7e7e3]"],
+html.dark [class~="border-[#eeeeea]"] { border-color: #343936 !important; }
+html.dark [class~="divide-[#e7e7e3]"] > :not(:last-child) { border-color: #343936 !important; }
+html.dark input,
+html.dark textarea,
+html.dark select { background-color: #191c1a; border-color: #3b413d; color: #f5f7f6; }
+html.dark input::placeholder,
+html.dark textarea::placeholder { color: #858d88; }
+html.dark [class~="hover:text-black"]:hover { color: #ffffff !important; }
+html.dark [class~="bg-orange-50"] { background-color: #382317 !important; }
+html.dark [class~="bg-sky-50"] { background-color: #102b36 !important; }
+html.dark [class~="bg-green-50"] { background-color: #10291c !important; }
+html.dark [class~="bg-amber-50"] { background-color: #33270e !important; }
+html.dark [class~="bg-red-50"] { background-color: #351719 !important; }
+html.dark [class~="bg-green-100"] { background-color: #173624 !important; }
+html.dark [class~="bg-amber-100"] { background-color: #3b2d10 !important; }
+html.dark [class~="bg-sky-100"] { background-color: #123344 !important; }
+html.dark [class~="bg-violet-100"] { background-color: #2b2048 !important; }
+html.dark [class~="bg-red-100"] { background-color: #421d20 !important; }
+html.dark [class~="text-sky-950"] { color: #d5f2ff !important; }
+html.dark [class~="text-green-800"],
+html.dark [class~="text-green-700"] { color: #86efac !important; }
+html.dark [class~="text-amber-950"],
+html.dark [class~="text-amber-900"],
+html.dark [class~="text-amber-700"] { color: #fde68a !important; }
+html.dark [class~="text-red-900"],
+html.dark [class~="text-red-800"],
+html.dark [class~="text-red-700"] { color: #fca5a5 !important; }
+html.dark [class~="text-sky-800"] { color: #bae6fd !important; }
+html.dark [class~="text-violet-800"] { color: #ddd6fe !important; }
+html.dark .theme-icon-light { display: none; }
+html.dark .theme-icon-dark { display: block; }
 
 a { color: inherit; text-decoration: none; }
 button, input, textarea, select { font: inherit; }

@@ -19,6 +19,46 @@ const googleMapsEmbedUrl = z.string().trim().max(4000).refine((value) => {
 }, "Paste a Google Maps iframe embed URL.").default("");
 const iconName = z.enum(["droplets", "zap", "paint", "wrench", "bath", "chef", "layers", "hammer", "leaf", "building", "siren", "key", "clock", "map", "shield", "message"]);
 
+const legalDocumentSchema = z.object({
+  title: shortText,
+  intro: z.string().trim().min(1).max(2000),
+  lastUpdated: shortText,
+  sections: z.array(z.object({ heading: shortText, body: z.string().trim().min(1).max(4000) })).min(1).max(20),
+});
+
+export const defaultLegalPages = {
+  privacy: {
+    title: "Privacy Policy",
+    intro: "This policy explains how ABLE Property Maintenance collects, uses and protects personal information submitted through this website or shared when you contact us.",
+    lastUpdated: "21 August 2026",
+    sections: [
+      { heading: "Information we collect", body: "When you request a quote or contact us, we may collect your name, telephone number, email address, requested service, property location and the details you choose to provide. We also use limited technical information, including a protected hash derived from a request address, to prevent spam and keep the enquiry service secure. Your light or dark theme choice is stored only in your browser's local storage so the website can remember your preference." },
+      { heading: "How we use information", body: "We use personal information to respond to enquiries, assess requested work, prepare or discuss quotations, arrange services, maintain business records, improve customer support and protect the website from misuse. We do not sell personal information." },
+      { heading: "Service providers and disclosure", body: "We use reputable hosting, database and storage providers to operate this website. Those providers may process information on our behalf under their own security and privacy commitments. Embedded Google Maps and links to external messaging or map services are governed by those providers' privacy practices. We may also disclose information when required by law, to protect legal rights or with your permission." },
+      { heading: "Retention", body: "We keep enquiry and project information only for as long as reasonably needed for customer service, quotations, work records, legal obligations and dispute prevention. Retention periods can vary according to the nature of the enquiry or service." },
+      { heading: "Security and international processing", body: "We use access controls, encrypted connections and other reasonable safeguards. No internet service can guarantee absolute security. Some technology providers may process or store data outside Sri Lanka, subject to their contractual and legal safeguards." },
+      { heading: "Your choices and rights", body: `You may ask to access, correct or delete personal information we hold about you, subject to applicable legal requirements and legitimate record-keeping needs. Send requests to ${siteConfig.email}. You may also contact Sri Lanka's Data Protection Authority about concerns covered by applicable data-protection law.` },
+      { heading: "Updates and contact", body: `We may update this policy when our services or legal responsibilities change. The latest version will appear on this page. Questions can be sent to ${siteConfig.email} or directed to ABLE Property Maintenance at ${siteConfig.address}.` },
+    ],
+  },
+  terms: {
+    title: "Website Terms",
+    intro: "These terms govern use of the ABLE Property Maintenance website. A separate written quotation or service agreement will govern any work we agree to perform.",
+    lastUpdated: "21 August 2026",
+    sections: [
+      { heading: "Using this website", body: "You may use this website to learn about our services and submit genuine enquiries. You must not misuse the website, attempt unauthorised access, interfere with its operation or submit unlawful, misleading or harmful material." },
+      { heading: "Enquiries are not bookings", body: "Sending an enquiry does not create a contract, confirm availability or guarantee attendance. Work is accepted only after ABLE confirms the scope, timing and applicable commercial terms. Urgent requests remain subject to availability and the nature and location of the work." },
+      { heading: "Quotations and scope", body: "Any quotation is based on the information and access available at the time. Hidden defects, inaccurate information, changes requested after inspection or additional work may affect price and timing. The accepted written quotation takes priority over general website information." },
+      { heading: "Customer responsibilities", body: "Customers must provide accurate information, lawful access to the property and a reasonably safe working environment. Required permissions, owner or landlord approvals and approvals from authorities remain the customer's responsibility unless a written agreement says otherwise." },
+      { heading: "Scheduling, changes and payment", body: "Scheduling depends on access, labour, materials, weather and other practical conditions. Payment dates, deposits, cancellation arrangements and charges will be stated in the applicable quotation or agreement. Contact us promptly if requested work or access arrangements change." },
+      { heading: "Website information and external services", body: "We aim to keep website information accurate, but service descriptions, availability and examples may change. Maps, messaging links and other third-party services are operated by their respective providers and may have separate terms and privacy practices." },
+      { heading: "Intellectual property", body: "Unless otherwise stated, the website design, text, branding and original media belong to ABLE Property Maintenance or are used with permission. They may not be copied or commercially reused without prior written consent." },
+      { heading: "Liability and applicable law", body: "Nothing in these terms excludes rights or responsibilities that cannot legally be excluded. To the extent permitted by law, ABLE is not responsible for losses caused solely by reliance on general website information or by third-party services. These website terms are governed by the laws of Sri Lanka." },
+      { heading: "Contact", body: `Questions about these terms can be sent to ${siteConfig.email} or directed to ABLE Property Maintenance at ${siteConfig.address}.` },
+    ],
+  },
+};
+
 export const siteContentSchema = z.object({
   business: z.object({
     name: shortText,
@@ -83,6 +123,7 @@ export const siteContentSchema = z.object({
   map: z.object({ title: shortText, description: paragraph, embedUrl: googleMapsEmbedUrl }),
   contact: z.object({ eyebrow: shortText, title: shortText, description: paragraph }),
   finalCta: z.object({ eyebrow: shortText, title: shortText }),
+  legal: z.object({ privacy: legalDocumentSchema, terms: legalDocumentSchema }).default(defaultLegalPages),
 });
 
 export type SiteContent = z.infer<typeof siteContentSchema>;
@@ -175,5 +216,6 @@ export const defaultSiteContent: SiteContent = siteContentSchema.parse({
     title: "Tell us what needs attention.",
     description: "Share the service, location and useful project details. For the fastest current response, call or use WhatsApp.",
   },
+  legal: defaultLegalPages,
   finalCta: { eyebrow: "Ready when your property needs attention", title: "Let’s make the next repair easier to organise." },
 });

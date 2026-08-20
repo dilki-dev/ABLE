@@ -64,6 +64,8 @@ export async function saveContentAction(_state: ActionState, formData: FormData)
 
   updateTag(SITE_CONTENT_CACHE_TAG);
   revalidatePath("/", "layout");
+  revalidatePath("/privacy", "page");
+  revalidatePath("/terms", "page");
   revalidatePath("/admin", "page");
   return { status: "success", message: "Published successfully. The live website now uses these changes.", completedAt: Date.now() };
 }
