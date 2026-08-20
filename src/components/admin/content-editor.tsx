@@ -2,9 +2,10 @@
 /* eslint-disable @next/next/no-img-element -- CMS previews must support an image URL while it is being edited. */
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ImageUp, Plus, Save, Trash2 } from "lucide-react";
+import { ChevronDown, ImageUp, MapPinned, Plus, Save, Trash2 } from "lucide-react";
 import { saveContentAction } from "@/app/admin/actions";
 import type { SiteContent } from "@/cms/content-schema";
+import { publicConfig } from "@/cms/public-config";
 import { initialActionState } from "./action-state";
 
 type PathPart = string | number;
@@ -182,7 +183,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
       <CopyEditor title="FAQ heading" value={content.faqSection} onChange={(key, value) => updatePath(["faqSection", key], value)} />
       <CollectionEditor title="FAQs" items={content.faqs} maxItems={20} fields={[{ key: "question", label: "Question" }, { key: "answer", label: "Answer", multiline: true }]} onChange={(i, key, v) => updatePath(["faqs", i, key], v)} onRemove={(i) => removeCollectionItem("faqs", i)} onAdd={() => addCollectionItem("faqs", { question: "New question", answer: "Add a clear and accurate answer." })} />
 
-      <CopyEditor title="Map section" value={content.map} onChange={(key, value) => updatePath(["map", key], value)} />
+      <MapEditor value={content.map} fallbackEmbedUrl={publicConfig(content.business).mapEmbedUrl} onChange={(key, value) => updatePath(["map", key], value)} />
       <CopyEditor title="Contact section" value={content.contact} onChange={(key, value) => updatePath(["contact", key], value)} />
       <CopyEditor title="Final call to action" value={content.finalCta} onChange={(key, value) => updatePath(["finalCta", key], value)} />
     </form>
@@ -235,6 +236,36 @@ function SimpleNestedCollection({ title, items, fields, onChange, onRemove, onAd
 
 function StringListEditor({ title, items, onChange, onRemove, onAdd, maxItems }: { title: string; items: readonly string[]; onChange: (index: number, value: string) => void; onRemove: (index: number) => void; onAdd: () => void; maxItems: number }) {
   return <div><h3 className="text-sm font-black">{title}</h3><div className="mt-3 space-y-2">{items.map((item, index) => <div key={index} className="flex min-w-0 gap-2"><input value={item} onChange={(e) => onChange(index, e.target.value)} className="min-h-12 min-w-0 flex-1 rounded-xl border border-[#d9d9d4] px-3.5 py-3 text-base outline-none focus:border-[#38bdf8] sm:text-sm" /><button type="button" disabled={items.length <= 1} onClick={() => onRemove(index)} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#e7e7e3] text-red-600 disabled:cursor-not-allowed disabled:opacity-30" aria-label={`Remove ${item}`}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></div>)}</div><button type="button" disabled={items.length >= maxItems} onClick={onAdd} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-sky-700 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"><Plus aria-hidden="true" className="h-4 w-4" />Add item</button></div>;
+}
+
+function MapEditor({ value, fallbackEmbedUrl, onChange }: { value: SiteContent["map"]; fallbackEmbedUrl: string; onChange: (key: string, value: string) => void }) {
+  const [draft, setDraft] = useState(value.embedUrl);
+  const [status, setStatus] = useState("");
+  const previewUrl = value.embedUrl || fallbackEmbedUrl;
+
+  function applyMap() {
+    const pastedValue = draft.trim();
+    if (!pastedValue) {
+      onChange("embedUrl", "");
+      setStatus("Using the map generated from the business address.");
+      return;
+    }
+
+    const documentFragment = new DOMParser().parseFromString(pastedValue, "text/html");
+    const candidate = documentFragment.querySelector("iframe")?.getAttribute("src")?.trim() || pastedValue;
+    try {
+      const url = new URL(candidate);
+      const isGoogleMap = url.protocol === "https:" && /(^|\.)google\.[a-z.]+$/i.test(url.hostname) && url.pathname.startsWith("/maps");
+      if (!isGoogleMap) throw new Error("INVALID_MAP_URL");
+      onChange("embedUrl", url.toString());
+      setDraft(url.toString());
+      setStatus("Google Map applied. Publish changes to show it publicly.");
+    } catch {
+      setStatus("Paste the iframe code from Google Maps → Share → Embed a map, or its HTTPS embed URL.");
+    }
+  }
+
+  return <EditorCard title="Map section" description="Set the heading and paste the real Google Maps iframe for this location."><CopyFields value={value} keys={["title", "description"]} multiline={["description"]} onChange={onChange} /><div><label className="block text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">Google Maps iframe or embed URL<textarea value={draft} onChange={(event) => { setDraft(event.target.value); setStatus(""); }} rows={4} placeholder={'<iframe src="https://www.google.com/maps/embed?...">'} className="mt-2 min-h-28 w-full rounded-xl border border-[#d9d9d4] bg-white px-3.5 py-3 font-mono text-sm normal-case tracking-normal outline-none focus:border-[#38bdf8] focus:ring-4 focus:ring-sky-100" /></label><div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center"><button type="button" onClick={applyMap} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#111111] px-4 py-3 text-sm font-extrabold text-white"><MapPinned aria-hidden="true" className="h-4 w-4" />Apply Google map</button>{value.embedUrl ? <button type="button" onClick={() => { setDraft(""); onChange("embedUrl", ""); setStatus("Custom map cleared. The business-address map will be used after publishing."); }} className="min-h-11 rounded-xl border border-[#d9d9d4] px-4 py-3 text-sm font-bold">Use business address</button> : null}</div>{status ? <p role="status" className={`mt-3 text-xs font-semibold leading-5 ${status.startsWith("Paste") ? "text-red-700" : "text-green-700"}`}>{status}</p> : null}</div><div className="overflow-hidden rounded-2xl border border-[#d9d9d4] bg-[#f1f1ed]"><iframe title="Google Maps CMS preview" src={previewUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="min-h-[320px] w-full border-0" /></div></EditorCard>;
 }
 
 function CopyEditor({ title, value, onChange }: { title: string; value: Record<string, unknown>; onChange: (key: string, value: string) => void }) {

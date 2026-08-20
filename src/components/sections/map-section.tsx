@@ -14,7 +14,7 @@ export function MapSection({ business, content }: { business: SiteContent["busin
           <p className="mt-4 text-sm leading-7 text-white/60">{content.description}</p>
           <a href={config.mapsUrl} target="_blank" rel="noreferrer" className="mt-7 inline-flex w-fit items-center gap-2 rounded-xl bg-[#f97316] px-5 py-3 text-sm font-extrabold text-white">Get directions <ExternalLink aria-hidden="true" className="h-4 w-4" /></a>
         </Reveal>
-        <iframe title="Map showing ABLE Property Maintenance in Attidiya, Dehiwala" src={config.mapEmbedUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="min-h-[380px] w-full border-0 grayscale-[.15]" />
+        <iframe title="Map showing ABLE Property Maintenance location" src={content.embedUrl || config.mapEmbedUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="min-h-[380px] w-full border-0 grayscale-[.15]" />
       </div>
     </section>
   );

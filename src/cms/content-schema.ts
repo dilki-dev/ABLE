@@ -8,6 +8,15 @@ const imagePath = z.string().trim().min(1).max(600).refine(
   (value) => (value.startsWith("/") && !value.startsWith("//")) || /^https:\/\/[a-zA-Z0-9.-]+\.public\.blob\.vercel-storage\.com\//.test(value),
   "Use a local /images path or an uploaded Vercel Blob image.",
 );
+const googleMapsEmbedUrl = z.string().trim().max(4000).refine((value) => {
+  if (!value) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && /(^|\.)google\.[a-z.]+$/i.test(url.hostname) && url.pathname.startsWith("/maps");
+  } catch {
+    return false;
+  }
+}, "Paste a Google Maps iframe embed URL.").default("");
 const iconName = z.enum(["droplets", "zap", "paint", "wrench", "bath", "chef", "layers", "hammer", "leaf", "building", "siren", "key", "clock", "map", "shield", "message"]);
 
 export const siteContentSchema = z.object({
@@ -71,7 +80,7 @@ export const siteContentSchema = z.object({
   }),
   faqSection: z.object({ eyebrow: shortText, title: shortText, description: paragraph }),
   faqs: z.array(z.object({ question: shortText, answer: paragraph })).min(1).max(20),
-  map: z.object({ title: shortText, description: paragraph }),
+  map: z.object({ title: shortText, description: paragraph, embedUrl: googleMapsEmbedUrl }),
   contact: z.object({ eyebrow: shortText, title: shortText, description: paragraph }),
   finalCta: z.object({ eyebrow: shortText, title: shortText }),
 });
@@ -160,7 +169,7 @@ export const defaultSiteContent: SiteContent = siteContentSchema.parse({
     description: "If your situation is different, send the details and ABLE can confirm whether the job is a suitable fit.",
   },
   faqs: [...faqs],
-  map: { title: "Find ABLE in Attidiya", description: siteConfig.address },
+  map: { title: "Find ABLE in Attidiya", description: siteConfig.address, embedUrl: "" },
   contact: {
     eyebrow: "Request a quote",
     title: "Tell us what needs attention.",
