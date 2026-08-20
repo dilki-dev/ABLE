@@ -1,0 +1,74 @@
+.section {
+  padding: 30px 0 130px;
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: 0.35fr 1.65fr;
+  border-top: 1px solid var(--line);
+  padding-top: 68px;
+}
+
+.quoteMark {
+  color: var(--violet);
+  font-family: Georgia, serif;
+  font-size: 8rem;
+  line-height: 0.7;
+}
+
+.inner blockquote {
+  margin: 0;
+}
+
+.inner blockquote > p {
+  max-width: 900px;
+  margin: 0;
+  font-size: clamp(2rem, 4.4vw, 4.4rem);
+  font-weight: 560;
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+}
+
+.inner footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 42px;
+}
+
+.avatar {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--orange);
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.inner footer strong,
+.inner footer div > span {
+  display: block;
+}
+
+.inner footer strong {
+  font-size: 0.86rem;
+}
+
+.inner footer div > span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 680px) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .quoteMark {
+    font-size: 5rem;
+  }
+}

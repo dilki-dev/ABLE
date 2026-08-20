@@ -1,0 +1,44 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+}
+
+.inverted {
+  color: white;
+}
+
+.symbol {
+  position: relative;
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--lime);
+}
+
+.symbol span {
+  position: absolute;
+  display: block;
+  width: 14px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--ink);
+}
+
+.symbol span:first-child {
+  transform: rotate(45deg);
+}
+
+.symbol span:last-child {
+  transform: rotate(-45deg);
+}
+
+.wordmark {
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
