@@ -1,7 +1,8 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- CMS previews must support an image URL while it is being edited. */
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { ImageUp, Plus, Save, Trash2 } from "lucide-react";
+import { ChevronDown, ImageUp, Plus, Save, Trash2 } from "lucide-react";
 import { saveContentAction } from "@/app/admin/actions";
 import type { SiteContent } from "@/cms/content-schema";
 import { initialActionState } from "./action-state";
@@ -100,11 +101,15 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
     });
   }
 
+  function setAllSections(open: boolean) {
+    document.querySelectorAll<HTMLDetailsElement>("[data-cms-section]").forEach((section) => { section.open = open; });
+  }
+
   return (
     <form action={action} onSubmit={() => { submittedContentRef.current = contentJson; }} aria-busy={pending} className="min-w-0 space-y-6">
       <input type="hidden" name="content" value={contentJson} readOnly />
       <div className="sticky top-2 z-20 flex flex-col gap-3 rounded-2xl border border-[#dfdfda] bg-white/95 p-4 shadow-lg backdrop-blur sm:top-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0"><h2 className="font-black">Website content</h2><p className="mt-1 text-xs text-[#777771]">Every group below matches a visible public section.</p></div>
+        <div className="min-w-0"><h2 className="font-black">Website content</h2><p className="mt-1 text-xs text-[#777771]">Open a section, make changes, then publish once.</p><div className="mt-2 flex flex-wrap gap-3"><button type="button" onClick={() => setAllSections(true)} className="text-xs font-bold text-sky-700 hover:underline">Expand all</button><button type="button" onClick={() => setAllSections(false)} className="text-xs font-bold text-[#64645f] hover:underline">Collapse all</button></div></div>
         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
           <div aria-live="polite" className="min-w-0 sm:max-w-xs">
             {state.message && !(state.status === "success" && dirty) ? <p role={state.status === "error" ? "alert" : "status"} className={`text-xs font-bold leading-5 ${state.status === "success" ? "text-green-700" : "text-red-700"}`}>{state.message}</p> : <p className={`text-xs font-bold ${dirty ? "text-amber-700" : "text-green-700"}`}>{dirty ? "Unsaved changes" : storedContent ? "All changes published" : "Ready for first publish"}</p>}
@@ -116,7 +121,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
       {!databaseReady ? <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm leading-6 text-amber-950">Editing is safely disabled because the database connection could not be verified. Existing live content has not been changed.</div> : null}
       {!mediaReady ? <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm leading-6 text-sky-950">Image uploads are optional and currently disabled. Existing local image paths continue to work.</div> : null}
 
-      <EditorCard title="Business details" description="Used by the header, contact area and footer.">
+      <EditorCard title="Business details" description="Used by the header, contact area and footer." defaultOpen>
         <FieldGrid>
           <CmsField label="Business name" value={content.business.name} onChange={(v) => updatePath(["business", "name"], v)} />
           <CmsField label="Tagline" value={content.business.tagline} onChange={(v) => updatePath(["business", "tagline"], v)} />
@@ -132,7 +137,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
 
       <CollectionEditor title="Navigation" items={content.navigation} maxItems={12} fields={[{ key: "label", label: "Label" }, { key: "href", label: "Section link" }]} onChange={(i, key, v) => updatePath(["navigation", i, key], v)} onRemove={(i) => removeCollectionItem("navigation", i)} onAdd={() => addCollectionItem("navigation", { label: "New link", href: "#contact" })} />
 
-      <EditorCard title="Hero" description="The first section visitors see.">
+      <EditorCard title="Hero" description="The first section visitors see." defaultOpen>
         <FieldGrid>
           <CmsField label="Urgent badge" value={content.hero.badge} onChange={(v) => updatePath(["hero", "badge"], v)} />
           <CmsField label="Location line" value={content.hero.location} onChange={(v) => updatePath(["hero", "location"], v)} />
@@ -156,7 +161,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
       </EditorCard>
 
       <CopyEditor title="Why choose us heading" value={content.whyChoose} onChange={(key, value) => updatePath(["whyChoose", key], value)} />
-      <SimpleNestedCollection title="Why choose us points" items={content.whyChoose.reasons} maxItems={12} fields={[{ key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["whyChoose", "reasons", i, key], v)} onRemove={(i) => removeNestedItem(["whyChoose", "reasons"], i)} onAdd={() => addNestedItem(["whyChoose", "reasons"], { title: "New reason", text: "Explain this benefit clearly." })} />
+      <EditorCard title="Why choose us points"><SimpleNestedCollection title="Reasons" items={content.whyChoose.reasons} maxItems={12} fields={[{ key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["whyChoose", "reasons", i, key], v)} onRemove={(i) => removeNestedItem(["whyChoose", "reasons"], i)} onAdd={() => addNestedItem(["whyChoose", "reasons"], { title: "New reason", text: "Explain this benefit clearly." })} /></EditorCard>
 
       <CopyEditor title="Projects heading" value={content.projectsSection} onChange={(key, value) => updatePath(["projectsSection", key], value)} />
       <CollectionEditor title="Project gallery" items={content.projects} maxItems={18} fields={[{ key: "title", label: "Title" }, { key: "service", label: "Service" }, { key: "location", label: "Location" }, { key: "image", label: "Image URL", image: true }]} mediaReady={mediaReady} onChange={(i, key, v) => updatePath(["projects", i, key], v)} onRemove={(i) => removeCollectionItem("projects", i)} onAdd={() => addCollectionItem("projects", { title: "New project", service: "Service", location: "Location", image: "/images/project-exterior-painting.png" })} />
@@ -184,8 +189,10 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
   );
 }
 
-function EditorCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
-  return <section className="min-w-0 rounded-2xl border border-[#dfdfda] bg-white p-4 sm:p-7"><h2 className="break-words text-xl font-black tracking-[-.02em]">{title}</h2>{description ? <p className="mt-1 text-sm leading-6 text-[#777771]">{description}</p> : null}<div className="mt-5 space-y-5 sm:mt-6">{children}</div></section>;
+function EditorCard({ title, description, children, defaultOpen = false }: { title: string; description?: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const sectionId = `cms-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
+  return <details id={sectionId} data-cms-section open={open} onToggle={(event) => setOpen(event.currentTarget.open)} className="group min-w-0 scroll-mt-32 rounded-2xl border border-[#dfdfda] bg-white shadow-sm open:shadow-md"><summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 marker:content-none sm:px-7"><span className="min-w-0"><span className="block break-words text-lg font-black tracking-[-.02em] sm:text-xl">{title}</span>{description ? <span className="mt-1 block text-sm leading-6 text-[#777771]">{description}</span> : null}</span><ChevronDown aria-hidden="true" className="h-5 w-5 shrink-0 text-[#777771] transition-transform group-open:rotate-180" /></summary><div className="space-y-5 border-t border-[#eeeeea] px-4 py-5 sm:px-7 sm:py-6">{children}</div></details>;
 }
 
 function FieldGrid({ children }: { children: React.ReactNode }) { return <div className="grid gap-4 md:grid-cols-2">{children}</div>; }
@@ -198,19 +205,24 @@ function CmsField({ label, value, onChange, multiline = false, options }: { labe
 function MediaField({ label, value, onChange, mediaReady }: { label: string; value: string; onChange: (value: string) => void; mediaReady: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState("");
+  const [uploading, setUploading] = useState(false);
   async function upload() {
     const file = inputRef.current?.files?.[0];
     if (!file) return setStatus("Choose an image first.");
+    if (!["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type)) return setStatus("Use a JPG, PNG, WebP or AVIF image.");
+    if (file.size > 4 * 1024 * 1024) return setStatus("The image must be smaller than 4 MB.");
     setStatus("Uploading…");
+    setUploading(true);
     const data = new FormData(); data.set("file", file);
     try {
       const response = await fetch("/api/admin/media", { method: "POST", body: data });
       const result = await response.json() as { url?: string; message?: string };
       if (!response.ok || !result.url) return setStatus(result.message ?? "Upload failed.");
-      onChange(result.url); setStatus("Uploaded. Save the website to publish it.");
+      onChange(result.url); setStatus("Uploaded. Publish changes to use this image.");
     } catch { setStatus("Upload failed."); }
+    finally { setUploading(false); }
   }
-  return <div className="min-w-0"><CmsField label={label} value={value} onChange={onChange} /><div className="mt-2 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center"><input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={!mediaReady} className="min-w-0 max-w-full text-xs" /><button type="button" onClick={upload} disabled={!mediaReady} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40"><ImageUp aria-hidden="true" className="h-4 w-4" />Upload</button>{status ? <span role="status" className="text-xs leading-5 text-[#64645f]">{status}</span> : null}</div></div>;
+  return <div className="min-w-0"><CmsField label={label} value={value} onChange={onChange} /><div className="mt-3 grid gap-3 rounded-xl border border-[#e7e7e3] bg-white p-3 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center"><div className="aspect-[4/3] overflow-hidden rounded-lg bg-[#f1f1ed]"><img src={value} alt="Current CMS selection" loading="lazy" className="h-full w-full object-cover" /></div><div className="min-w-0"><p className="text-xs font-bold text-[#64645f]">JPG, PNG, WebP or AVIF · maximum 4 MB</p><div className="mt-2 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center"><input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={!mediaReady || uploading} onChange={() => setStatus("")} className="min-w-0 max-w-full text-xs" /><button type="button" onClick={upload} disabled={!mediaReady || uploading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40"><ImageUp aria-hidden="true" className="h-4 w-4" />{uploading ? "Uploading…" : "Upload"}</button></div>{status ? <span role="status" className="mt-2 block text-xs font-semibold leading-5 text-[#64645f]">{status}</span> : null}</div></div></div>;
 }
 
 function CollectionEditor({ title, items, fields, onChange, onRemove, onAdd, maxItems, mediaReady = false }: { title: string; items: readonly Record<string, string>[]; fields: FieldDefinition[]; onChange: (index: number, key: string, value: string) => void; onRemove: (index: number) => void; onAdd: () => void; maxItems: number; mediaReady?: boolean }) {
