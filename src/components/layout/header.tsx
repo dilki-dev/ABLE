@@ -34,7 +34,7 @@ export function Header({ business, navigation, homeLinks = false }: { business: 
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <a href={homeLinks ? "/#contact" : "#contact"} className="hidden rounded-xl bg-[#f97316] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#df5f0e] lg:inline-flex">Request a quote</a>
+            <a href={homeLinks ? "/#contact" : "#contact"} className="header-quote-button hidden rounded-xl px-5 py-3 text-sm font-extrabold transition lg:inline-flex">Request a quote</a>
             <MobileMenu business={business} navigation={navigation} homeLinks={homeLinks} />
           </div>
         </div>
