@@ -51,14 +51,14 @@ export function ContactForm({ services }: { services: readonly string[] }) {
     }
   }
 
-  const inputClass = "mt-2 w-full rounded-xl border border-[#d9d9d4] bg-white px-4 py-3.5 text-sm outline-none transition placeholder:text-stone-400 focus:border-[#38bdf8] focus:ring-4 focus:ring-sky-100";
+  const inputClass = "mt-2 min-h-12 w-full rounded-xl border border-[#d9d9d4] bg-white px-4 py-3.5 text-base outline-none transition placeholder:text-stone-400 focus:border-[#38bdf8] focus:ring-4 focus:ring-sky-100 sm:text-sm";
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="rounded-3xl bg-white p-6 shadow-[0_25px_80px_rgba(17,17,17,.12)] sm:p-8">
+    <form onSubmit={handleSubmit} noValidate aria-busy={status === "submitting"} className="rounded-3xl bg-white p-5 shadow-[0_25px_80px_rgba(17,17,17,.12)] sm:p-8">
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Name" name="name" required error={errors.name} inputClass={inputClass} />
-        <Field label="Phone" name="phone" type="tel" required error={errors.phone} inputClass={inputClass} />
-        <Field label="Email (optional)" name="email" type="email" error={errors.email} inputClass={inputClass} />
+        <Field label="Name" name="name" autoComplete="name" required error={errors.name} inputClass={inputClass} />
+        <Field label="Phone" name="phone" type="tel" autoComplete="tel" required error={errors.phone} inputClass={inputClass} />
+        <Field label="Email (optional)" name="email" type="email" autoComplete="email" error={errors.email} inputClass={inputClass} />
         <label className="text-sm font-bold text-[#292924]">
           Service <span className="text-[#f97316]">*</span>
           <select name="service" defaultValue="" aria-invalid={Boolean(errors.service)} aria-describedby={errors.service ? "service-error" : undefined} className={inputClass}>
@@ -88,12 +88,12 @@ export function ContactForm({ services }: { services: readonly string[] }) {
   );
 }
 
-function Field({ label, name, type = "text", required = false, error, inputClass }: { label: string; name: string; type?: string; required?: boolean; error?: string; inputClass: string }) {
+function Field({ label, name, type = "text", autoComplete, required = false, error, inputClass }: { label: string; name: string; type?: string; autoComplete?: string; required?: boolean; error?: string; inputClass: string }) {
   const errorId = `${name}-error`;
   return (
     <label className="text-sm font-bold text-[#292924]">
       {label} {required ? <span className="text-[#f97316]">*</span> : null}
-      <input name={name} type={type} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} className={inputClass} />
+      <input name={name} type={type} autoComplete={autoComplete} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} className={inputClass} />
       {error ? <span id={errorId} className="mt-1 block text-xs font-semibold text-red-600">{error}</span> : null}
     </label>
   );

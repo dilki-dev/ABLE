@@ -1,12 +1,12 @@
 "use server";
 
 import { createHash, timingSafeEqual } from "node:crypto";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { siteContentSchema } from "@/cms/content-schema";
-import { saveSiteContent } from "@/backend/content-repository";
+import { saveSiteContent, SITE_CONTENT_CACHE_TAG } from "@/backend/content-repository";
 import { updateEnquiry, type EnquiryStatus } from "@/backend/enquiries";
 import { hashRequestAddress } from "@/backend/enquiries";
 import { isAdminLoginRateLimited, recordAdminLoginAttempt } from "@/backend/admin-login-rate-limit";
@@ -46,19 +46,26 @@ export async function logoutAction() {
 export async function saveContentAction(_state: ActionState, formData: FormData): Promise<ActionState> {
   if (!(await hasAdminSession())) return { status: "error", message: "Your admin session has expired. Sign in again." };
   const raw = String(formData.get("content") ?? "");
+  if (!raw || raw.length > 250_000) return { status: "error", message: "The website content is empty or too large to save safely." };
 
   try {
     const parsed = siteContentSchema.safeParse(JSON.parse(raw));
-    if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "The content is invalid." };
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      const field = issue?.path.length ? issue.path.join(" → ") : "website content";
+      return { status: "error", message: `Check ${field}: ${issue?.message ?? "the value is invalid."}` };
+    }
     await saveSiteContent(parsed.data);
   } catch (error) {
     if (error instanceof SyntaxError) return { status: "error", message: "The content could not be read." };
+    console.error("CMS content save failed.", error);
     return { status: "error", message: "The database is not connected or could not save this update." };
   }
 
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return { status: "success", message: "Website content saved successfully." };
+  updateTag(SITE_CONTENT_CACHE_TAG);
+  revalidatePath("/", "layout");
+  revalidatePath("/admin", "page");
+  return { status: "success", message: "Published successfully. The live website now uses these changes.", completedAt: Date.now() };
 }
 
 const enquiryUpdateSchema = z.object({

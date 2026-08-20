@@ -21,7 +21,7 @@ export function Header({ business, navigation }: { business: SiteContent["busine
     <header className={`sticky top-0 z-50 transition-shadow ${scrolled ? "shadow-[0_8px_30px_rgba(17,17,17,.1)]" : ""}`}>
       <div className="hidden bg-[#111111] py-2 text-xs text-white/75 md:block">
         <div className="site-container flex items-center justify-between gap-6">
-          <span className="flex items-center gap-2"><MapPin aria-hidden="true" className="h-3.5 w-3.5 text-[#38bdf8]" />{business.address}</span>
+          <span className="flex min-w-0 items-center gap-2"><MapPin aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-[#38bdf8]" /><span className="truncate">{business.address}</span></span>
           <a href={config.phoneHref} className="flex items-center gap-2 font-bold text-white hover:text-orange-300"><Phone aria-hidden="true" className="h-3.5 w-3.5" />{business.phoneDisplay}</a>
         </div>
       </div>

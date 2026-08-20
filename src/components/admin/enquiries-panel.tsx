@@ -6,11 +6,11 @@ import { updateEnquiryAction } from "@/app/admin/actions";
 import type { Enquiry } from "@/backend/enquiries";
 import { initialActionState } from "./action-state";
 
-export function EnquiriesPanel({ enquiries, databaseReady }: { enquiries: Enquiry[]; databaseReady: boolean }) {
+export function EnquiriesPanel({ enquiries, databaseReady, error }: { enquiries: Enquiry[]; databaseReady: boolean; error: string | null }) {
   return (
     <section className="rounded-2xl border border-[#dfdfda] bg-white p-5 sm:p-6">
       <div className="flex items-end justify-between gap-4"><div><p className="text-xs font-extrabold uppercase tracking-[.14em] text-[#38bdf8]">Inbox</p><h2 className="mt-1 text-xl font-black">Quote enquiries</h2></div><span className="rounded-full bg-[#111111] px-3 py-1 text-xs font-black text-white">{enquiries.length}</span></div>
-      {!databaseReady ? <p className="mt-5 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">Enquiries will appear after the database is connected.</p> : enquiries.length === 0 ? <p className="mt-5 rounded-xl bg-[#f7f7f5] p-4 text-sm text-[#64645f]">No enquiries yet.</p> : <div className="mt-5 space-y-4">{enquiries.map((enquiry) => <EnquiryCard key={enquiry.id} enquiry={enquiry} />)}</div>}
+      {!databaseReady ? <p className="mt-5 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">Enquiries will appear after the database is connected.</p> : error ? <p role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-900">{error}</p> : enquiries.length === 0 ? <p className="mt-5 rounded-xl bg-[#f7f7f5] p-4 text-sm text-[#64645f]">No enquiries yet.</p> : <div className="mt-5 space-y-4">{enquiries.map((enquiry) => <EnquiryCard key={enquiry.id} enquiry={enquiry} />)}</div>}
     </section>
   );
 }
@@ -24,9 +24,9 @@ function EnquiryCard({ enquiry }: { enquiry: Enquiry }) {
       <p className="mt-3 whitespace-pre-wrap rounded-lg bg-white p-3 text-xs leading-5 text-[#4f4f4a]">{enquiry.message}</p>
       <form action={action} className="mt-3 space-y-3">
         <input type="hidden" name="id" value={enquiry.id} />
-        <select name="status" defaultValue={enquiry.status} className="w-full rounded-lg border border-[#d9d9d4] bg-white px-3 py-2.5 text-xs font-bold"><option value="new">New</option><option value="contacted">Contacted</option><option value="quoted">Quoted</option><option value="closed">Closed</option><option value="spam">Spam</option></select>
-        <textarea name="notes" defaultValue={enquiry.admin_notes} rows={2} placeholder="Private admin notes" className="w-full rounded-lg border border-[#d9d9d4] bg-white px-3 py-2.5 text-xs outline-none focus:border-sky-400" />
-        <div className="flex items-center justify-between gap-2"><span className={`text-[11px] ${state.status === "error" ? "text-red-700" : "text-green-700"}`}>{state.message}</span><button disabled={pending} className="inline-flex items-center gap-1.5 rounded-lg bg-[#111111] px-3 py-2 text-xs font-bold text-white"><Save aria-hidden="true" className="h-3.5 w-3.5" />{pending ? "Saving…" : "Update"}</button></div>
+        <select name="status" defaultValue={enquiry.status} className="min-h-11 w-full rounded-lg border border-[#d9d9d4] bg-white px-3 py-2.5 text-base font-bold sm:text-sm"><option value="new">New</option><option value="contacted">Contacted</option><option value="quoted">Quoted</option><option value="closed">Closed</option><option value="spam">Spam</option></select>
+        <textarea name="notes" defaultValue={enquiry.admin_notes} rows={3} placeholder="Private admin notes" className="w-full rounded-lg border border-[#d9d9d4] bg-white px-3 py-2.5 text-base outline-none focus:border-sky-400 sm:text-sm" />
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between"><span role="status" className={`text-xs ${state.status === "error" ? "text-red-700" : "text-green-700"}`}>{state.message}</span><button disabled={pending} className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-[#111111] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"><Save aria-hidden="true" className="h-3.5 w-3.5" />{pending ? "Saving…" : "Update"}</button></div>
       </form>
     </article>
   );

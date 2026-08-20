@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { ImageUp, Plus, Save, Trash2 } from "lucide-react";
 import { saveContentAction } from "@/app/admin/actions";
 import type { SiteContent } from "@/cms/content-schema";
@@ -8,12 +8,32 @@ import { initialActionState } from "./action-state";
 
 type PathPart = string | number;
 type CollectionKey = "navigation" | "trustItems" | "services" | "projects" | "processSteps" | "faqs";
+type NestedCollectionPath = ["whyChoose", "reasons"] | ["testimonials", "items"];
+type StringListPath = ["hero", "bullets"] | ["about", "bullets"] | ["areas", "items"];
 type FieldDefinition = { key: string; label: string; multiline?: boolean; options?: readonly string[]; image?: boolean };
 const iconOptions = ["droplets", "zap", "paint", "wrench", "bath", "chef", "layers", "hammer", "leaf", "building", "siren", "key", "clock", "map", "shield", "message"] as const;
 
-export function ContentEditor({ initialContent, databaseReady, mediaReady }: { initialContent: SiteContent; databaseReady: boolean; mediaReady: boolean }) {
+export function ContentEditor({ initialContent, databaseReady, mediaReady, storedContent }: { initialContent: SiteContent; databaseReady: boolean; mediaReady: boolean; storedContent: boolean }) {
   const [content, setContent] = useState(initialContent);
+  const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(initialContent));
   const [state, action, pending] = useActionState(saveContentAction, initialActionState);
+  const submittedContentRef = useRef(savedContentJson);
+  const contentJson = useMemo(() => JSON.stringify(content), [content]);
+  const dirty = contentJson !== savedContentJson;
+
+  useEffect(() => {
+    if (state.status === "success" && state.completedAt) setSavedContentJson(submittedContentRef.current);
+  }, [state.status, state.completedAt]);
+
+  useEffect(() => {
+    const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
+      if (!dirty) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeLeaving);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
+  }, [dirty]);
 
   function updatePath(path: PathPart[], value: string) {
     setContent((current) => {
@@ -35,7 +55,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady }: { i
     setContent((current) => ({ ...current, [key]: [...current[key], template] } as SiteContent));
   }
 
-  function updateStringList(path: ["hero", "bullets"] | ["about", "bullets"] | ["areas", "items"], index: number, value: string) {
+  function updateStringList(path: StringListPath, index: number, value: string) {
     setContent((current) => {
       const copy = structuredClone(current);
       const list = path[0] === "hero" ? copy.hero.bullets : path[0] === "about" ? copy.about.bullets : copy.areas.items;
@@ -44,7 +64,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady }: { i
     });
   }
 
-  function removeStringListItem(path: ["hero", "bullets"] | ["about", "bullets"] | ["areas", "items"], index: number) {
+  function removeStringListItem(path: StringListPath, index: number) {
     setContent((current) => {
       const copy = structuredClone(current);
       const list = path[0] === "hero" ? copy.hero.bullets : path[0] === "about" ? copy.about.bullets : copy.areas.items;
@@ -53,7 +73,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady }: { i
     });
   }
 
-  function addStringListItem(path: ["hero", "bullets"] | ["about", "bullets"] | ["areas", "items"]) {
+  function addStringListItem(path: StringListPath) {
     setContent((current) => {
       const copy = structuredClone(current);
       const list = path[0] === "hero" ? copy.hero.bullets : path[0] === "about" ? copy.about.bullets : copy.areas.items;
@@ -62,18 +82,39 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady }: { i
     });
   }
 
+  function removeNestedItem(path: NestedCollectionPath, index: number) {
+    setContent((current) => {
+      const copy = structuredClone(current);
+      const list = path[0] === "whyChoose" ? copy.whyChoose.reasons : copy.testimonials.items;
+      list.splice(index, 1);
+      return copy;
+    });
+  }
+
+  function addNestedItem(path: NestedCollectionPath, template: { title: string; text: string }) {
+    setContent((current) => {
+      const copy = structuredClone(current);
+      const list = path[0] === "whyChoose" ? copy.whyChoose.reasons : copy.testimonials.items;
+      list.push(template);
+      return copy;
+    });
+  }
+
   return (
-    <form action={action} className="min-w-0 space-y-6">
-      <input type="hidden" name="content" value={JSON.stringify(content)} />
-      <div className="sticky top-3 z-20 flex flex-col gap-3 rounded-2xl border border-[#dfdfda] bg-white/95 p-4 shadow-lg backdrop-blur sm:flex-row sm:items-center sm:justify-between">
-        <div><h2 className="font-black">Website content</h2><p className="mt-1 text-xs text-[#777771]">Every group below matches a visible public section.</p></div>
-        <div className="flex items-center gap-3">
-          {state.message ? <p role="status" className={`text-xs font-bold ${state.status === "success" ? "text-green-700" : "text-red-700"}`}>{state.message}</p> : null}
-          <button disabled={pending || !databaseReady} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#f97316] px-5 py-3 text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"><Save aria-hidden="true" className="h-4 w-4" />{pending ? "Saving…" : "Save website"}</button>
+    <form action={action} onSubmit={() => { submittedContentRef.current = contentJson; }} aria-busy={pending} className="min-w-0 space-y-6">
+      <input type="hidden" name="content" value={contentJson} readOnly />
+      <div className="sticky top-2 z-20 flex flex-col gap-3 rounded-2xl border border-[#dfdfda] bg-white/95 p-4 shadow-lg backdrop-blur sm:top-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0"><h2 className="font-black">Website content</h2><p className="mt-1 text-xs text-[#777771]">Every group below matches a visible public section.</p></div>
+        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+          <div aria-live="polite" className="min-w-0 sm:max-w-xs">
+            {state.message && !(state.status === "success" && dirty) ? <p role={state.status === "error" ? "alert" : "status"} className={`text-xs font-bold leading-5 ${state.status === "success" ? "text-green-700" : "text-red-700"}`}>{state.message}</p> : <p className={`text-xs font-bold ${dirty ? "text-amber-700" : "text-green-700"}`}>{dirty ? "Unsaved changes" : storedContent ? "All changes published" : "Ready for first publish"}</p>}
+          </div>
+          <button disabled={pending || !databaseReady} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#f97316] px-5 py-3 text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"><Save aria-hidden="true" className="h-4 w-4" />{pending ? "Publishing…" : "Publish changes"}</button>
         </div>
       </div>
 
-      {!databaseReady ? <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm leading-6 text-amber-950">The editor is in safe preview mode. Current content remains unchanged until `DATABASE_URL` is connected.</div> : null}
+      {!databaseReady ? <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm leading-6 text-amber-950">Editing is safely disabled because the database connection could not be verified. Existing live content has not been changed.</div> : null}
+      {!mediaReady ? <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm leading-6 text-sky-950">Image uploads are optional and currently disabled. Existing local image paths continue to work.</div> : null}
 
       <EditorCard title="Business details" description="Used by the header, contact area and footer.">
         <FieldGrid>
@@ -89,7 +130,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady }: { i
         <CmsField label="Address" value={content.business.address} multiline onChange={(v) => updatePath(["business", "address"], v)} />
       </EditorCard>
 
-      <CollectionEditor title="Navigation" items={content.navigation} fields={[{ key: "label", label: "Label" }, { key: "href", label: "Section link" }]} onChange={(i, key, v) => updatePath(["navigation", i, key], v)} onRemove={(i) => removeCollectionItem("navigation", i)} onAdd={() => addCollectionItem("navigation", { label: "New link", href: "#contact" })} />
+      <CollectionEditor title="Navigation" items={content.navigation} maxItems={12} fields={[{ key: "label", label: "Label" }, { key: "href", label: "Section link" }]} onChange={(i, key, v) => updatePath(["navigation", i, key], v)} onRemove={(i) => removeCollectionItem("navigation", i)} onAdd={() => addCollectionItem("navigation", { label: "New link", href: "#contact" })} />
 
       <EditorCard title="Hero" description="The first section visitors see.">
         <FieldGrid>
@@ -100,41 +141,41 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady }: { i
         </FieldGrid>
         <CmsField label="Description" value={content.hero.description} multiline onChange={(v) => updatePath(["hero", "description"], v)} />
         <MediaField label="Hero image" value={content.hero.image} mediaReady={mediaReady} onChange={(v) => updatePath(["hero", "image"], v)} />
-        <StringListEditor title="Hero trust points" items={content.hero.bullets} onChange={(i, v) => updateStringList(["hero", "bullets"], i, v)} onRemove={(i) => removeStringListItem(["hero", "bullets"], i)} onAdd={() => addStringListItem(["hero", "bullets"])} />
+        <StringListEditor title="Hero trust points" items={content.hero.bullets} maxItems={4} onChange={(i, v) => updateStringList(["hero", "bullets"], i, v)} onRemove={(i) => removeStringListItem(["hero", "bullets"], i)} onAdd={() => addStringListItem(["hero", "bullets"])} />
       </EditorCard>
 
-      <CollectionEditor title="Trust bar" items={content.trustItems} fields={[{ key: "icon", label: "Icon", options: iconOptions }, { key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["trustItems", i, key], v)} onRemove={(i) => removeCollectionItem("trustItems", i)} onAdd={() => addCollectionItem("trustItems", { icon: "shield", title: "New trust point", text: "Add a clear, factual description." })} />
+      <CollectionEditor title="Trust bar" items={content.trustItems} maxItems={8} fields={[{ key: "icon", label: "Icon", options: iconOptions }, { key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["trustItems", i, key], v)} onRemove={(i) => removeCollectionItem("trustItems", i)} onAdd={() => addCollectionItem("trustItems", { icon: "shield", title: "New trust point", text: "Add a clear, factual description." })} />
 
       <CopyEditor title="Services heading" value={content.servicesSection} onChange={(key, value) => updatePath(["servicesSection", key], value)} />
-      <CollectionEditor title="Services" items={content.services} fields={[{ key: "icon", label: "Icon", options: iconOptions }, { key: "title", label: "Service name" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["services", i, key], v)} onRemove={(i) => removeCollectionItem("services", i)} onAdd={() => addCollectionItem("services", { icon: "wrench", title: "New service", text: "Describe the service accurately." })} />
+      <CollectionEditor title="Services" items={content.services} maxItems={24} fields={[{ key: "icon", label: "Icon", options: iconOptions }, { key: "title", label: "Service name" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["services", i, key], v)} onRemove={(i) => removeCollectionItem("services", i)} onAdd={() => addCollectionItem("services", { icon: "wrench", title: "New service", text: "Describe the service accurately." })} />
 
       <EditorCard title="About section">
         <CopyFields value={content.about} keys={["eyebrow", "title", "description", "body", "badgeLabel", "badgeValue"]} multiline={["description", "body"]} onChange={(key, value) => updatePath(["about", key], value)} />
         <MediaField label="About image" value={content.about.image} mediaReady={mediaReady} onChange={(v) => updatePath(["about", "image"], v)} />
-        <StringListEditor title="About points" items={content.about.bullets} onChange={(i, v) => updateStringList(["about", "bullets"], i, v)} onRemove={(i) => removeStringListItem(["about", "bullets"], i)} onAdd={() => addStringListItem(["about", "bullets"])} />
+        <StringListEditor title="About points" items={content.about.bullets} maxItems={8} onChange={(i, v) => updateStringList(["about", "bullets"], i, v)} onRemove={(i) => removeStringListItem(["about", "bullets"], i)} onAdd={() => addStringListItem(["about", "bullets"])} />
       </EditorCard>
 
       <CopyEditor title="Why choose us heading" value={content.whyChoose} onChange={(key, value) => updatePath(["whyChoose", key], value)} />
-      <SimpleNestedCollection title="Why choose us points" items={content.whyChoose.reasons} fields={[{ key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["whyChoose", "reasons", i, key], v)} />
+      <SimpleNestedCollection title="Why choose us points" items={content.whyChoose.reasons} maxItems={12} fields={[{ key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["whyChoose", "reasons", i, key], v)} onRemove={(i) => removeNestedItem(["whyChoose", "reasons"], i)} onAdd={() => addNestedItem(["whyChoose", "reasons"], { title: "New reason", text: "Explain this benefit clearly." })} />
 
       <CopyEditor title="Projects heading" value={content.projectsSection} onChange={(key, value) => updatePath(["projectsSection", key], value)} />
-      <CollectionEditor title="Project gallery" items={content.projects} fields={[{ key: "title", label: "Title" }, { key: "service", label: "Service" }, { key: "location", label: "Location" }, { key: "image", label: "Image URL", image: true }]} mediaReady={mediaReady} onChange={(i, key, v) => updatePath(["projects", i, key], v)} onRemove={(i) => removeCollectionItem("projects", i)} onAdd={() => addCollectionItem("projects", { title: "New project", service: "Service", location: "Location", image: "/images/project-exterior-painting.png" })} />
+      <CollectionEditor title="Project gallery" items={content.projects} maxItems={18} fields={[{ key: "title", label: "Title" }, { key: "service", label: "Service" }, { key: "location", label: "Location" }, { key: "image", label: "Image URL", image: true }]} mediaReady={mediaReady} onChange={(i, key, v) => updatePath(["projects", i, key], v)} onRemove={(i) => removeCollectionItem("projects", i)} onAdd={() => addCollectionItem("projects", { title: "New project", service: "Service", location: "Location", image: "/images/project-exterior-painting.png" })} />
 
       <CopyEditor title="Process heading" value={content.processSection} onChange={(key, value) => updatePath(["processSection", key], value)} />
-      <CollectionEditor title="Process steps" items={content.processSteps} fields={[{ key: "number", label: "Number" }, { key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["processSteps", i, key], v)} onRemove={(i) => removeCollectionItem("processSteps", i)} onAdd={() => addCollectionItem("processSteps", { number: "05", title: "New step", text: "Describe this step." })} />
+      <CollectionEditor title="Process steps" items={content.processSteps} maxItems={8} fields={[{ key: "number", label: "Number" }, { key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["processSteps", i, key], v)} onRemove={(i) => removeCollectionItem("processSteps", i)} onAdd={() => addCollectionItem("processSteps", { number: "05", title: "New step", text: "Describe this step." })} />
 
       <EditorCard title="Testimonials">
         <CopyFields value={content.testimonials} keys={["eyebrow", "title", "description"]} multiline={["description"]} onChange={(key, value) => updatePath(["testimonials", key], value)} />
-        <SimpleNestedCollection title="Review cards" items={content.testimonials.items} fields={[{ key: "title", label: "Title" }, { key: "text", label: "Review text", multiline: true }]} onChange={(i, key, v) => updatePath(["testimonials", "items", i, key], v)} />
+        <SimpleNestedCollection title="Review cards" items={content.testimonials.items} maxItems={12} fields={[{ key: "title", label: "Title" }, { key: "text", label: "Review text", multiline: true }]} onChange={(i, key, v) => updatePath(["testimonials", "items", i, key], v)} onRemove={(i) => removeNestedItem(["testimonials", "items"], i)} onAdd={() => addNestedItem(["testimonials", "items"], { title: "New review", text: "Add a verified, permission-approved customer review." })} />
       </EditorCard>
 
       <EditorCard title="Service areas">
         <CopyFields value={content.areas} keys={["eyebrow", "title", "description", "urgentTitle", "urgentText"]} multiline={["description", "urgentText"]} onChange={(key, value) => updatePath(["areas", key], value)} />
-        <StringListEditor title="Area names" items={content.areas.items} onChange={(i, v) => updateStringList(["areas", "items"], i, v)} onRemove={(i) => removeStringListItem(["areas", "items"], i)} onAdd={() => addStringListItem(["areas", "items"])} />
+        <StringListEditor title="Area names" items={content.areas.items} maxItems={30} onChange={(i, v) => updateStringList(["areas", "items"], i, v)} onRemove={(i) => removeStringListItem(["areas", "items"], i)} onAdd={() => addStringListItem(["areas", "items"])} />
       </EditorCard>
 
       <CopyEditor title="FAQ heading" value={content.faqSection} onChange={(key, value) => updatePath(["faqSection", key], value)} />
-      <CollectionEditor title="FAQs" items={content.faqs} fields={[{ key: "question", label: "Question" }, { key: "answer", label: "Answer", multiline: true }]} onChange={(i, key, v) => updatePath(["faqs", i, key], v)} onRemove={(i) => removeCollectionItem("faqs", i)} onAdd={() => addCollectionItem("faqs", { question: "New question", answer: "Add a clear and accurate answer." })} />
+      <CollectionEditor title="FAQs" items={content.faqs} maxItems={20} fields={[{ key: "question", label: "Question" }, { key: "answer", label: "Answer", multiline: true }]} onChange={(i, key, v) => updatePath(["faqs", i, key], v)} onRemove={(i) => removeCollectionItem("faqs", i)} onAdd={() => addCollectionItem("faqs", { question: "New question", answer: "Add a clear and accurate answer." })} />
 
       <CopyEditor title="Map section" value={content.map} onChange={(key, value) => updatePath(["map", key], value)} />
       <CopyEditor title="Contact section" value={content.contact} onChange={(key, value) => updatePath(["contact", key], value)} />
@@ -144,14 +185,14 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady }: { i
 }
 
 function EditorCard({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
-  return <section className="rounded-2xl border border-[#dfdfda] bg-white p-5 sm:p-7"><h2 className="text-xl font-black tracking-[-.02em]">{title}</h2>{description ? <p className="mt-1 text-sm text-[#777771]">{description}</p> : null}<div className="mt-6 space-y-5">{children}</div></section>;
+  return <section className="min-w-0 rounded-2xl border border-[#dfdfda] bg-white p-4 sm:p-7"><h2 className="break-words text-xl font-black tracking-[-.02em]">{title}</h2>{description ? <p className="mt-1 text-sm leading-6 text-[#777771]">{description}</p> : null}<div className="mt-5 space-y-5 sm:mt-6">{children}</div></section>;
 }
 
 function FieldGrid({ children }: { children: React.ReactNode }) { return <div className="grid gap-4 md:grid-cols-2">{children}</div>; }
 
 function CmsField({ label, value, onChange, multiline = false, options }: { label: string; value: string; onChange: (value: string) => void; multiline?: boolean; options?: readonly string[] }) {
-  const className = "mt-2 w-full rounded-xl border border-[#d9d9d4] bg-white px-3.5 py-3 text-sm outline-none focus:border-[#38bdf8] focus:ring-4 focus:ring-sky-100";
-  return <label className="block text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label}{options ? <select value={value} onChange={(e) => onChange(e.target.value)} className={className}>{options.map((option) => <option key={option}>{option}</option>)}</select> : multiline ? <textarea rows={4} value={value} onChange={(e) => onChange(e.target.value)} className={className} /> : <input value={value} onChange={(e) => onChange(e.target.value)} className={className} />}</label>;
+  const className = "mt-2 min-h-12 w-full rounded-xl border border-[#d9d9d4] bg-white px-3.5 py-3 text-base normal-case tracking-normal outline-none focus:border-[#38bdf8] focus:ring-4 focus:ring-sky-100 sm:text-sm";
+  return <label className="block min-w-0 text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label}{options ? <select value={value} onChange={(e) => onChange(e.target.value)} className={className}>{options.map((option) => <option key={option}>{option}</option>)}</select> : multiline ? <textarea rows={4} value={value} onChange={(e) => onChange(e.target.value)} className={className} /> : <input value={value} onChange={(e) => onChange(e.target.value)} className={className} />}</label>;
 }
 
 function MediaField({ label, value, onChange, mediaReady }: { label: string; value: string; onChange: (value: string) => void; mediaReady: boolean }) {
@@ -169,19 +210,19 @@ function MediaField({ label, value, onChange, mediaReady }: { label: string; val
       onChange(result.url); setStatus("Uploaded. Save the website to publish it.");
     } catch { setStatus("Upload failed."); }
   }
-  return <div><CmsField label={label} value={value} onChange={onChange} /><div className="mt-2 flex flex-wrap items-center gap-2"><input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={!mediaReady} className="max-w-full text-xs" /><button type="button" onClick={upload} disabled={!mediaReady} className="inline-flex items-center gap-2 rounded-lg border border-[#d9d9d4] px-3 py-2 text-xs font-bold disabled:opacity-40"><ImageUp aria-hidden="true" className="h-4 w-4" />Upload</button>{status ? <span className="text-xs text-[#64645f]">{status}</span> : null}</div></div>;
+  return <div className="min-w-0"><CmsField label={label} value={value} onChange={onChange} /><div className="mt-2 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center"><input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={!mediaReady} className="min-w-0 max-w-full text-xs" /><button type="button" onClick={upload} disabled={!mediaReady} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40"><ImageUp aria-hidden="true" className="h-4 w-4" />Upload</button>{status ? <span role="status" className="text-xs leading-5 text-[#64645f]">{status}</span> : null}</div></div>;
 }
 
-function CollectionEditor({ title, items, fields, onChange, onRemove, onAdd, mediaReady = false }: { title: string; items: readonly Record<string, string>[]; fields: FieldDefinition[]; onChange: (index: number, key: string, value: string) => void; onRemove: (index: number) => void; onAdd: () => void; mediaReady?: boolean }) {
-  return <EditorCard title={title}>{items.map((item, index) => <div key={index} className="rounded-xl border border-[#e7e7e3] bg-[#fafaf8] p-4"><div className="mb-4 flex items-center justify-between"><span className="text-xs font-black uppercase tracking-[.12em] text-[#999990]">Item {index + 1}</span><button type="button" onClick={() => onRemove(index)} className="rounded-lg p-2 text-red-600 hover:bg-red-50" aria-label={`Remove item ${index + 1}`}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></div><div className="grid gap-4 md:grid-cols-2">{fields.map((field) => field.image ? <MediaField key={field.key} label={field.label} value={item[field.key]} onChange={(value) => onChange(index, field.key, value)} mediaReady={mediaReady} /> : <CmsField key={field.key} label={field.label} value={item[field.key]} multiline={field.multiline} options={field.options} onChange={(value) => onChange(index, field.key, value)} />)}</div></div>)}<button type="button" onClick={onAdd} className="inline-flex items-center gap-2 rounded-xl border border-dashed border-[#bcbcb5] px-4 py-3 text-sm font-bold hover:border-[#38bdf8]"><Plus aria-hidden="true" className="h-4 w-4" />Add item</button></EditorCard>;
+function CollectionEditor({ title, items, fields, onChange, onRemove, onAdd, maxItems, mediaReady = false }: { title: string; items: readonly Record<string, string>[]; fields: FieldDefinition[]; onChange: (index: number, key: string, value: string) => void; onRemove: (index: number) => void; onAdd: () => void; maxItems: number; mediaReady?: boolean }) {
+  return <EditorCard title={title}>{items.map((item, index) => <div key={index} className="min-w-0 rounded-xl border border-[#e7e7e3] bg-[#fafaf8] p-4"><div className="mb-4 flex items-center justify-between gap-3"><span className="text-xs font-black uppercase tracking-[.12em] text-[#999990]">Item {index + 1}</span><button type="button" disabled={items.length <= 1} onClick={() => onRemove(index)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-30" aria-label={`Remove item ${index + 1}`}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></div><div className="grid min-w-0 gap-4 md:grid-cols-2">{fields.map((field) => field.image ? <MediaField key={field.key} label={field.label} value={item[field.key]} onChange={(value) => onChange(index, field.key, value)} mediaReady={mediaReady} /> : <CmsField key={field.key} label={field.label} value={item[field.key]} multiline={field.multiline} options={field.options} onChange={(value) => onChange(index, field.key, value)} />)}</div></div>)}<button type="button" disabled={items.length >= maxItems} onClick={onAdd} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#bcbcb5] px-4 py-3 text-sm font-bold hover:border-[#38bdf8] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"><Plus aria-hidden="true" className="h-4 w-4" />Add item</button></EditorCard>;
 }
 
-function SimpleNestedCollection({ title, items, fields, onChange }: { title: string; items: readonly Record<string, string>[]; fields: FieldDefinition[]; onChange: (index: number, key: string, value: string) => void }) {
-  return <div><h3 className="text-sm font-black">{title}</h3><div className="mt-3 space-y-3">{items.map((item, index) => <div key={index} className="grid gap-4 rounded-xl border border-[#e7e7e3] bg-[#fafaf8] p-4 md:grid-cols-2">{fields.map((field) => <CmsField key={field.key} label={field.label} value={item[field.key]} multiline={field.multiline} onChange={(value) => onChange(index, field.key, value)} />)}</div>)}</div></div>;
+function SimpleNestedCollection({ title, items, fields, onChange, onRemove, onAdd, maxItems }: { title: string; items: readonly Record<string, string>[]; fields: FieldDefinition[]; onChange: (index: number, key: string, value: string) => void; onRemove: (index: number) => void; onAdd: () => void; maxItems: number }) {
+  return <div><h3 className="text-sm font-black">{title}</h3><div className="mt-3 space-y-3">{items.map((item, index) => <div key={index} className="min-w-0 rounded-xl border border-[#e7e7e3] bg-[#fafaf8] p-4"><div className="mb-3 flex items-center justify-between"><span className="text-xs font-black uppercase tracking-[.12em] text-[#999990]">Item {index + 1}</span><button type="button" disabled={items.length <= 1} onClick={() => onRemove(index)} className="flex h-11 w-11 items-center justify-center rounded-lg text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-30" aria-label={`Remove item ${index + 1}`}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></div><div className="grid min-w-0 gap-4 md:grid-cols-2">{fields.map((field) => <CmsField key={field.key} label={field.label} value={item[field.key]} multiline={field.multiline} onChange={(value) => onChange(index, field.key, value)} />)}</div></div>)}</div><button type="button" disabled={items.length >= maxItems} onClick={onAdd} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#bcbcb5] px-4 py-3 text-sm font-bold hover:border-[#38bdf8] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"><Plus aria-hidden="true" className="h-4 w-4" />Add item</button></div>;
 }
 
-function StringListEditor({ title, items, onChange, onRemove, onAdd }: { title: string; items: readonly string[]; onChange: (index: number, value: string) => void; onRemove: (index: number) => void; onAdd: () => void }) {
-  return <div><h3 className="text-sm font-black">{title}</h3><div className="mt-3 space-y-2">{items.map((item, index) => <div key={index} className="flex gap-2"><input value={item} onChange={(e) => onChange(index, e.target.value)} className="min-w-0 flex-1 rounded-xl border border-[#d9d9d4] px-3.5 py-3 text-sm outline-none focus:border-[#38bdf8]" /><button type="button" onClick={() => onRemove(index)} className="rounded-xl border border-[#e7e7e3] px-3 text-red-600" aria-label={`Remove ${item}`}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></div>)}</div><button type="button" onClick={onAdd} className="mt-3 inline-flex items-center gap-2 rounded-lg text-sm font-bold text-sky-700"><Plus aria-hidden="true" className="h-4 w-4" />Add item</button></div>;
+function StringListEditor({ title, items, onChange, onRemove, onAdd, maxItems }: { title: string; items: readonly string[]; onChange: (index: number, value: string) => void; onRemove: (index: number) => void; onAdd: () => void; maxItems: number }) {
+  return <div><h3 className="text-sm font-black">{title}</h3><div className="mt-3 space-y-2">{items.map((item, index) => <div key={index} className="flex min-w-0 gap-2"><input value={item} onChange={(e) => onChange(index, e.target.value)} className="min-h-12 min-w-0 flex-1 rounded-xl border border-[#d9d9d4] px-3.5 py-3 text-base outline-none focus:border-[#38bdf8] sm:text-sm" /><button type="button" disabled={items.length <= 1} onClick={() => onRemove(index)} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#e7e7e3] text-red-600 disabled:cursor-not-allowed disabled:opacity-30" aria-label={`Remove ${item}`}><Trash2 aria-hidden="true" className="h-4 w-4" /></button></div>)}</div><button type="button" disabled={items.length >= maxItems} onClick={onAdd} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg text-sm font-bold text-sky-700 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"><Plus aria-hidden="true" className="h-4 w-4" />Add item</button></div>;
 }
 
 function CopyEditor({ title, value, onChange }: { title: string; value: Record<string, unknown>; onChange: (key: string, value: string) => void }) {
