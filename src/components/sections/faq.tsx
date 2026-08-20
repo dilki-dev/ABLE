@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { faqs } from "@/data/site-content";
+import type { SiteContent } from "@/cms/content-schema";
 import { SectionHeading } from "@/components/ui/section-heading";
 
-export function FAQ() {
+export function FAQ({ copy, faqs }: { copy: SiteContent["faqSection"]; faqs: SiteContent["faqs"] }) {
   const [openIndex, setOpenIndex] = useState(0);
   return (
     <section id="faq" className="section-space bg-white">
       <div className="site-container grid gap-12 lg:grid-cols-[.75fr_1.25fr]">
-        <div><SectionHeading eyebrow="FAQ" title="Useful answers before you enquire" description="If your situation is different, send the details and ABLE can confirm whether the job is a suitable fit." /></div>
+        <div><SectionHeading eyebrow={copy.eyebrow} title={copy.title} description={copy.description} /></div>
         <div className="divide-y divide-[#e7e7e3] border-y border-[#e7e7e3]">
           {faqs.map((faq, index) => {
             const open = index === openIndex;

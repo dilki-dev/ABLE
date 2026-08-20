@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { navigation, siteConfig } from "@/lib/site-config";
+import type { SiteContent } from "@/cms/content-schema";
+import { publicConfig } from "@/cms/public-config";
 
-export function MobileMenu() {
+export function MobileMenu({ business, navigation }: { business: SiteContent["business"]; navigation: SiteContent["navigation"] }) {
   const [open, setOpen] = useState(false);
+  const config = publicConfig(business);
 
   return (
     <div className="lg:hidden">
@@ -18,7 +20,7 @@ export function MobileMenu() {
             {navigation.map((item) => (
               <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="border-b border-[#eeeeea] py-3.5 text-base font-bold">{item.label}</a>
             ))}
-            <a href={siteConfig.phoneHref} className="mt-5 rounded-xl bg-[#f97316] px-5 py-4 text-center text-sm font-extrabold text-white">Call {siteConfig.phoneDisplay}</a>
+            <a href={config.phoneHref} className="mt-5 rounded-xl bg-[#f97316] px-5 py-4 text-center text-sm font-extrabold text-white">Call {business.phoneDisplay}</a>
           </nav>
         </div>
       ) : null}

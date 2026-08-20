@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
+import { getSiteContent } from "@/backend/content-repository";
 import { siteConfig } from "@/lib/site-config";
 import "./globals.css";
 
@@ -9,46 +10,26 @@ const manrope = Manrope({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.siteUrl),
-  title: {
-    default: "ABLE Property Maintenance | Reliable Property Care in Sri Lanka",
-    template: "%s | ABLE Property Maintenance",
-  },
-  description:
-    "Professional property maintenance, repairs and improvements across Colombo and throughout Sri Lanka.",
-  keywords: [
-    "property maintenance Sri Lanka",
-    "property repairs Colombo",
-    "plumbing Dehiwala",
-    "electrical repairs Colombo",
-    "property refurbishment Sri Lanka",
-  ],
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    locale: "en_LK",
-    url: "/",
-    siteName: siteConfig.name,
-    title: "ABLE Property Maintenance | Reliable Property Care. Built to Last.",
-    description:
-      "Professional maintenance, repairs and property improvements across Colombo and throughout Sri Lanka.",
-    images: [
-      {
-        url: "/images/hero-property-maintenance.png",
-        width: 1536,
-        height: 1024,
-        alt: "ABLE property maintenance professional working on a modern Sri Lankan home",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "ABLE Property Maintenance",
-    description: "Reliable property care across Colombo and Sri Lanka.",
-    images: ["/images/hero-property-maintenance.png"],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getSiteContent();
+  return {
+    metadataBase: new URL(siteConfig.siteUrl),
+    title: { default: `${content.business.name} | ${content.business.tagline}`, template: `%s | ${content.business.name}` },
+    description: content.business.description,
+    keywords: ["property maintenance Sri Lanka", "property repairs Colombo", "plumbing Dehiwala", "electrical repairs Colombo", "property refurbishment Sri Lanka"],
+    alternates: { canonical: "/" },
+    openGraph: {
+      type: "website",
+      locale: "en_LK",
+      url: "/",
+      siteName: content.business.name,
+      title: `${content.business.name} | ${content.business.tagline}`,
+      description: content.business.description,
+      images: [{ url: content.hero.image, alt: "ABLE property maintenance professional working on a modern Sri Lankan home" }],
+    },
+    twitter: { card: "summary_large_image", title: content.business.name, description: content.business.description, images: [content.hero.image] },
+  };
+}
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

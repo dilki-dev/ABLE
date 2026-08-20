@@ -1,6 +1,6 @@
 # ABLE Property Maintenance website
 
-A premium, modular Next.js landing page for a Sri Lankan property-maintenance business. The site uses the App Router, TypeScript, Tailwind CSS, Lucide icons, Motion animations and local image assets.
+A premium, modular Next.js website and protected content-management backend for a Sri Lankan property-maintenance business. The site uses the App Router, TypeScript, Tailwind CSS, Lucide icons, Motion, PostgreSQL and optional Vercel Blob storage.
 
 ## Start locally
 
@@ -19,13 +19,17 @@ src/
 |-- components/
 |   |-- layout/   Header, mobile menu, logo and footer
 |   |-- sections/ One file for each visible homepage section
+|   |-- admin/    CMS editor and enquiry inbox
 |   `-- ui/       Reusable cards, icons, form, animation and floating actions
+|-- backend/      Database, sessions, content and enquiry access
+|-- cms/          Validated CMS content model and public helpers
 |-- data/         Editable service and section content
 `-- lib/          Business details and links
+database/         Reviewable PostgreSQL schema
 public/images/    Project-local generated placeholder photography
 ```
 
-The homepage order is intentionally easy to read in `src/app/page.tsx`. See [CUSTOMIZE.md](./CUSTOMIZE.md) for the exact file to edit for each website element.
+The homepage order is intentionally easy to read in `src/app/page.tsx`. See [CUSTOMIZE.md](./CUSTOMIZE.md) for content editing and [BACKEND_SETUP.md](./BACKEND_SETUP.md) for the production database and CMS connection.
 
 ## Quality checks
 

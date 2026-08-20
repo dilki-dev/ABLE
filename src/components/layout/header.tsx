@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { MapPin, Phone } from "lucide-react";
-import { navigation, siteConfig } from "@/lib/site-config";
+import type { SiteContent } from "@/cms/content-schema";
+import { publicConfig } from "@/cms/public-config";
 import { Logo } from "./logo";
 import { MobileMenu } from "./mobile-menu";
 
-export function Header() {
+export function Header({ business, navigation }: { business: SiteContent["business"]; navigation: SiteContent["navigation"] }) {
   const [scrolled, setScrolled] = useState(false);
+  const config = publicConfig(business);
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 24);
     update();
@@ -19,8 +21,8 @@ export function Header() {
     <header className={`sticky top-0 z-50 transition-shadow ${scrolled ? "shadow-[0_8px_30px_rgba(17,17,17,.1)]" : ""}`}>
       <div className="hidden bg-[#111111] py-2 text-xs text-white/75 md:block">
         <div className="site-container flex items-center justify-between gap-6">
-          <span className="flex items-center gap-2"><MapPin aria-hidden="true" className="h-3.5 w-3.5 text-[#38bdf8]" />{siteConfig.address}</span>
-          <a href={siteConfig.phoneHref} className="flex items-center gap-2 font-bold text-white hover:text-orange-300"><Phone aria-hidden="true" className="h-3.5 w-3.5" />{siteConfig.phoneDisplay}</a>
+          <span className="flex items-center gap-2"><MapPin aria-hidden="true" className="h-3.5 w-3.5 text-[#38bdf8]" />{business.address}</span>
+          <a href={config.phoneHref} className="flex items-center gap-2 font-bold text-white hover:text-orange-300"><Phone aria-hidden="true" className="h-3.5 w-3.5" />{business.phoneDisplay}</a>
         </div>
       </div>
       <div className="relative border-b border-[#e7e7e3] bg-white/95 backdrop-blur-lg">
@@ -32,7 +34,7 @@ export function Header() {
           <div className="hidden lg:block">
             <a href="#contact" className="inline-flex rounded-xl bg-[#f97316] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#df5f0e]">Request a quote</a>
           </div>
-          <MobileMenu />
+          <MobileMenu business={business} navigation={navigation} />
         </div>
       </div>
     </header>

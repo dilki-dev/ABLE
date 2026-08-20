@@ -15,60 +15,52 @@ import { TrustBar } from "@/components/sections/trust-bar";
 import { WhyChooseUs } from "@/components/sections/why-choose-us";
 import { FloatingWhatsApp } from "@/components/ui/floating-whatsapp";
 import { MobileCallBar } from "@/components/ui/mobile-call-bar";
-import { services } from "@/data/site-content";
+import { getSiteContent } from "@/backend/content-repository";
 import { siteConfig } from "@/lib/site-config";
 
-const localBusinessSchema = {
-  "@context": "https://schema.org",
-  "@type": "HomeAndConstructionBusiness",
-  name: siteConfig.name,
-  url: siteConfig.siteUrl,
-  description: siteConfig.description,
-  telephone: siteConfig.phoneRaw,
-  email: siteConfig.email,
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "65/62 Kahawita Mawatha, Attidiya",
-    addressLocality: "Dehiwala",
-    addressCountry: "LK",
-  },
-  areaServed: [
-    { "@type": "City", name: "Colombo" },
-    { "@type": "Country", name: "Sri Lanka" },
-  ],
-  hasOfferCatalog: {
-    "@type": "OfferCatalog",
-    name: "Property maintenance services",
-    itemListElement: services.map((service) => ({
-      "@type": "Offer",
-      itemOffered: { "@type": "Service", name: service.title, description: service.text },
-    })),
-  },
-};
+export const revalidate = 300;
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await getSiteContent();
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "HomeAndConstructionBusiness",
+    name: content.business.name,
+    url: siteConfig.siteUrl,
+    description: content.business.description,
+    telephone: content.business.phoneRaw,
+    email: content.business.email,
+    address: { "@type": "PostalAddress", streetAddress: content.business.address, addressCountry: "LK" },
+    areaServed: [{ "@type": "City", name: "Colombo" }, { "@type": "Country", name: "Sri Lanka" }],
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Property maintenance services",
+      itemListElement: content.services.map((service) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: service.title, description: service.text } })),
+    },
+  };
+
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to content</a>
-      <Header />
+      <Header business={content.business} navigation={content.navigation} />
       <main id="main-content">
-        <Hero />
-        <TrustBar />
-        <Services />
-        <About />
-        <WhyChooseUs />
-        <Projects />
-        <Process />
-        <Testimonials />
-        <ServiceAreas />
-        <FAQ />
-        <MapSection />
-        <Contact />
-        <FinalCTA />
+        <Hero business={content.business} content={content.hero} />
+        <TrustBar items={content.trustItems} />
+        <Services copy={content.servicesSection} services={content.services} />
+        <About content={content.about} />
+        <WhyChooseUs content={content.whyChoose} />
+        <Projects copy={content.projectsSection} projects={content.projects} />
+        <Process copy={content.processSection} steps={content.processSteps} />
+        <Testimonials content={content.testimonials} />
+        <ServiceAreas content={content.areas} />
+        <FAQ copy={content.faqSection} faqs={content.faqs} />
+        <MapSection business={content.business} content={content.map} />
+        <Contact business={content.business} content={content.contact} services={content.services} />
+        <FinalCTA business={content.business} content={content.finalCta} />
       </main>
-      <Footer />
-      <FloatingWhatsApp />
-      <MobileCallBar />
+      <Footer business={content.business} navigation={content.navigation} />
+      <FloatingWhatsApp business={content.business} />
+      <MobileCallBar business={content.business} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema).replace(/</g, "\\u003c") }} />
     </>
   );
