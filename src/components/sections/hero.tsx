@@ -21,7 +21,7 @@ export function Hero({ business, content }: { business: SiteContent["business"];
           <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 sm:text-xl">{content.description}</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <a href={config.phoneHref} className="motion-lift inline-flex items-center justify-center gap-2 rounded-xl bg-[#f97316] px-6 py-4 text-sm font-extrabold text-white transition hover:bg-[#df5f0e]"><Phone aria-hidden="true" className="h-4 w-4" /> Call now</a>
-            <a href="#contact" className="motion-lift inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-4 text-sm font-extrabold text-white backdrop-blur transition hover:bg-white hover:text-[#111111]">Request a quote <ArrowRight aria-hidden="true" className="h-4 w-4" /></a>
+            <a href="#contact" className="hero-quote-button motion-lift inline-flex items-center justify-center gap-2 rounded-xl px-6 py-4 text-sm font-extrabold backdrop-blur">Request a quote <ArrowRight aria-hidden="true" className="h-4 w-4" /></a>
             <a href={config.whatsappUrl} target="_blank" rel="noreferrer" className="motion-lift inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-4 text-sm font-extrabold text-white backdrop-blur transition hover:border-green-400 hover:bg-green-600"><MessageCircle aria-hidden="true" className="h-4 w-4" /> WhatsApp</a>
           </div>
           <div className="mt-9 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-white/70">
