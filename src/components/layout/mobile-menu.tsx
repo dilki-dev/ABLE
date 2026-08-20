@@ -5,7 +5,7 @@ import { Menu, X } from "lucide-react";
 import type { SiteContent } from "@/cms/content-schema";
 import { publicConfig } from "@/cms/public-config";
 
-export function MobileMenu({ business, navigation }: { business: SiteContent["business"]; navigation: SiteContent["navigation"] }) {
+export function MobileMenu({ business, navigation, homeLinks = false }: { business: SiteContent["business"]; navigation: SiteContent["navigation"]; homeLinks?: boolean }) {
   const [open, setOpen] = useState(false);
   const config = publicConfig(business);
 
@@ -25,7 +25,7 @@ export function MobileMenu({ business, navigation }: { business: SiteContent["bu
         <div id="mobile-navigation" className="absolute inset-x-0 top-full max-h-[calc(100dvh-76px)] overflow-y-auto border-t border-[#e7e7e3] bg-white p-5 shadow-2xl">
           <nav aria-label="Mobile navigation" className="site-container flex flex-col">
             {navigation.map((item) => (
-              <a key={item.href} href={item.href} onClick={() => setOpen(false)} className="border-b border-[#eeeeea] py-3.5 text-base font-bold">{item.label}</a>
+              <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} onClick={() => setOpen(false)} className="border-b border-[#eeeeea] py-3.5 text-base font-bold">{item.label}</a>
             ))}
             <a href={config.phoneHref} className="mt-5 rounded-xl bg-[#f97316] px-5 py-4 text-center text-sm font-extrabold text-white">Call {business.phoneDisplay}</a>
           </nav>

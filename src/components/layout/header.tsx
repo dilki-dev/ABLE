@@ -6,8 +6,9 @@ import type { SiteContent } from "@/cms/content-schema";
 import { publicConfig } from "@/cms/public-config";
 import { Logo } from "./logo";
 import { MobileMenu } from "./mobile-menu";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-export function Header({ business, navigation }: { business: SiteContent["business"]; navigation: SiteContent["navigation"] }) {
+export function Header({ business, navigation, homeLinks = false }: { business: SiteContent["business"]; navigation: SiteContent["navigation"]; homeLinks?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const config = publicConfig(business);
   useEffect(() => {
@@ -29,12 +30,13 @@ export function Header({ business, navigation }: { business: SiteContent["busine
         <div className="site-container flex h-[76px] items-center justify-between gap-5">
           <Logo />
           <nav aria-label="Primary navigation" className="hidden items-center gap-6 lg:flex">
-            {navigation.map((item) => <a key={item.href} href={item.href} className="text-sm font-bold text-[#4d4d48] transition hover:text-[#f97316]">{item.label}</a>)}
+            {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="text-sm font-bold text-[#4d4d48] transition hover:text-[#f97316]">{item.label}</a>)}
           </nav>
-          <div className="hidden lg:block">
-            <a href="#contact" className="inline-flex rounded-xl bg-[#f97316] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#df5f0e]">Request a quote</a>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <a href={homeLinks ? "/#contact" : "#contact"} className="hidden rounded-xl bg-[#f97316] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#df5f0e] lg:inline-flex">Request a quote</a>
+            <MobileMenu business={business} navigation={navigation} homeLinks={homeLinks} />
           </div>
-          <MobileMenu business={business} navigation={navigation} />
         </div>
       </div>
     </header>

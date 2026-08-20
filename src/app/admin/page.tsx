@@ -6,6 +6,7 @@ import { hasAdminSession } from "@/backend/session";
 import { logoutAction } from "./actions";
 import { ContentEditor } from "@/components/admin/content-editor";
 import { EnquiriesPanel } from "@/components/admin/enquiries-panel";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default async function AdminPage() {
   if (!(await hasAdminSession())) redirect("/admin/login");
@@ -35,6 +36,7 @@ export default async function AdminPage() {
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
             <span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-extrabold ${databaseReady ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-900"}`}><Database aria-hidden="true" className="h-4 w-4" />{databaseReady ? "Database connected" : "Database setup needed"}</span>
             <a href="/" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#dfdfda] bg-white px-4 py-2.5 text-sm font-bold hover:border-sky-300">View website <ExternalLink aria-hidden="true" className="h-4 w-4" /></a>
+            <ThemeToggle className="w-full sm:w-11" />
             <form action={logoutAction}><button className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#111111] px-4 py-2.5 text-sm font-bold text-white"><LogOut aria-hidden="true" className="h-4 w-4" />Sign out</button></form>
           </div>
         </div>

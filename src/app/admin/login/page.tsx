@@ -2,11 +2,13 @@ import { redirect } from "next/navigation";
 import { hasAdminSession, isAdminConfigured } from "@/backend/session";
 import { isDatabaseConfigured } from "@/backend/database";
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default async function AdminLoginPage() {
   if (await hasAdminSession()) redirect("/admin");
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#111111] p-5 text-white">
+    <main className="relative flex min-h-screen items-center justify-center bg-[#111111] p-5 text-white">
+      <ThemeToggle className="absolute right-5 top-5 border-white/20 bg-[#191919] text-white" />
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#191919] p-7 shadow-2xl sm:p-9">
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f97316] text-xl font-black shadow-[inset_-8px_0_0_#38bdf8]">A</div>
         <p className="mt-8 text-xs font-extrabold uppercase tracking-[.18em] text-[#38bdf8]">ABLE Property Maintenance</p>
