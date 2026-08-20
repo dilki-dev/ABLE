@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { siteContentSchema } from "@/cms/content-schema";
 import { saveSiteContent, SITE_CONTENT_CACHE_TAG } from "@/backend/content-repository";
-import { updateEnquiry, type EnquiryStatus } from "@/backend/enquiries";
+import { deleteEnquiry, updateEnquiry, type EnquiryStatus } from "@/backend/enquiries";
 import { hashRequestAddress } from "@/backend/enquiries";
 import { isAdminLoginRateLimited, recordAdminLoginAttempt } from "@/backend/admin-login-rate-limit";
 import { isDatabaseConfigured } from "@/backend/database";
@@ -85,5 +85,22 @@ export async function updateEnquiryAction(_state: ActionState, formData: FormDat
     return { status: "success", message: "Enquiry updated." };
   } catch {
     return { status: "error", message: "The enquiry could not be updated." };
+  }
+}
+
+const enquiryDeleteSchema = z.object({ id: z.uuid() });
+
+export async function deleteEnquiryAction(_state: ActionState, formData: FormData): Promise<ActionState> {
+  if (!(await hasAdminSession())) return { status: "error", message: "Your admin session has expired. Sign in again." };
+  const parsed = enquiryDeleteSchema.safeParse({ id: formData.get("id") });
+  if (!parsed.success) return { status: "error", message: "The enquiry could not be identified." };
+
+  try {
+    const deleted = await deleteEnquiry(parsed.data.id);
+    if (!deleted) return { status: "error", message: "This enquiry no longer exists." };
+    revalidatePath("/admin");
+    return { status: "success", message: "Enquiry deleted." };
+  } catch {
+    return { status: "error", message: "The enquiry could not be deleted." };
   }
 }
