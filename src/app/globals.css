@@ -100,6 +100,15 @@ img { max-width: 100%; }
 :focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
 .header-quote-button { border: 1px solid #ea580c; background: #f97316 !important; color: #ffffff !important; box-shadow: 0 8px 22px rgb(249 115 22 / .2); }
 .header-quote-button:hover { background: #df5f0e !important; border-color: #c9500a; }
+.final-cta-quote-button { border: 1px solid rgb(255 255 255 / .75); background: #ffffff !important; color: #111111 !important; box-shadow: 0 10px 28px rgb(17 17 17 / .16); }
+.final-cta-quote-button:hover { background: #fff7ed !important; border-color: #ffffff; color: #111111 !important; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .motion-lift { transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease; }
+  .motion-lift:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgb(17 17 17 / .18); }
+  .status-pulse { animation: status-pulse 2.4s ease-out infinite; }
+  @keyframes status-pulse { 0%, 65%, 100% { box-shadow: 0 0 0 0 rgb(251 146 60 / .45); } 35% { box-shadow: 0 0 0 7px rgb(251 146 60 / 0); } }
+}
 
 @media (max-width: 640px) {
   .site-container { width: min(100% - 28px, 1180px); }
