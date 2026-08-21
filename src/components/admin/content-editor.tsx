@@ -151,6 +151,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
         </FieldGrid>
         <CmsField label="Business description" value={content.business.description} multiline onChange={(v) => updatePath(["business", "description"], v)} />
         <CmsField label="Address" value={content.business.address} multiline onChange={(v) => updatePath(["business", "address"], v)} />
+        <LogoMediaField value={content.business.logoImage} mediaReady={mediaReady} onChange={(v) => updatePath(["business", "logoImage"], v)} />
       </EditorCard>
 
       <CollectionEditor title="Navigation" items={content.navigation} maxItems={12} fields={[{ key: "label", label: "Label" }, { key: "href", label: "Section link" }]} onChange={(i, key, v) => updatePath(["navigation", i, key], v)} onRemove={(i) => removeCollectionItem("navigation", i)} onAdd={() => addCollectionItem("navigation", { label: "New link", href: "#contact" })} />
@@ -220,6 +221,29 @@ function FieldGrid({ children }: { children: React.ReactNode }) { return <div cl
 function CmsField({ label, value, onChange, multiline = false, options }: { label: string; value: string; onChange: (value: string) => void; multiline?: boolean; options?: readonly string[] }) {
   const className = "mt-2 min-h-12 w-full rounded-xl border border-[#d9d9d4] bg-white px-3.5 py-3 text-base normal-case tracking-normal outline-none focus:border-[#38bdf8] focus:ring-4 focus:ring-sky-100 sm:text-sm";
   return <label className="block min-w-0 text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label}{options ? <select value={value} onChange={(e) => onChange(e.target.value)} className={className}>{options.map((option) => <option key={option}>{option}</option>)}</select> : multiline ? <textarea rows={4} value={value} onChange={(e) => onChange(e.target.value)} className={className} /> : <input value={value} onChange={(e) => onChange(e.target.value)} className={className} />}</label>;
+}
+
+function LogoMediaField({ value, onChange, mediaReady }: { value: string; onChange: (value: string) => void; mediaReady: boolean }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [status, setStatus] = useState("");
+  const [uploading, setUploading] = useState(false);
+  async function upload() {
+    const file = inputRef.current?.files?.[0];
+    if (!file) return setStatus("Choose a PNG logo first.");
+    if (file.type !== "image/png") return setStatus("Use a PNG image for the navigation logo.");
+    if (file.size > 4 * 1024 * 1024) return setStatus("The logo must be smaller than 4 MB.");
+    setStatus("Uploading…");
+    setUploading(true);
+    const data = new FormData(); data.set("file", file);
+    try {
+      const response = await fetch("/api/admin/media", { method: "POST", body: data });
+      const result = await response.json() as { url?: string; message?: string };
+      if (!response.ok || !result.url) return setStatus(result.message ?? "Upload failed.");
+      onChange(result.url); setStatus("Logo uploaded. Publish changes to show it in the navigation.");
+    } catch { setStatus("Upload failed."); }
+    finally { setUploading(false); }
+  }
+  return <div className="min-w-0"><CmsField label="Navigation logo PNG" value={value} onChange={onChange} /><div className="mt-3 grid gap-3 rounded-xl border border-[#e7e7e3] bg-white p-3 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center"><div className="aspect-[4/3] overflow-hidden rounded-lg bg-[#f1f1ed]">{value ? <img src={value} alt="Current navigation logo" loading="lazy" className="h-full w-full object-contain p-2" /> : <div className="flex h-full items-center justify-center p-3 text-center text-xs font-bold text-[#777771]">Text logo active</div>}</div><div className="min-w-0"><p className="text-xs font-bold text-[#64645f]">Transparent PNG recommended · maximum 4 MB</p><div className="mt-2 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center"><input ref={inputRef} type="file" accept="image/png" disabled={!mediaReady || uploading} onChange={() => setStatus("")} className="min-w-0 max-w-full text-xs" /><button type="button" onClick={upload} disabled={!mediaReady || uploading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40"><ImageUp aria-hidden="true" className="h-4 w-4" />{uploading ? "Uploading…" : value ? "Replace" : "Upload"}</button>{value ? <button type="button" onClick={() => { onChange(""); setStatus("Text logo selected. Publish changes to update the navigation."); }} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold">Use text logo</button> : null}</div>{status ? <span role="status" className="mt-2 block text-xs font-semibold leading-5 text-[#64645f]">{status}</span> : null}</div></div></div>;
 }
 
 function MediaField({ label, value, onChange, mediaReady }: { label: string; value: string; onChange: (value: string) => void; mediaReady: boolean }) {
