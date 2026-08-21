@@ -10,9 +10,8 @@ export function Footer({ business, navigation, homeLinks = false }: { business: 
     <footer className="bg-[#0d0d0d] pb-8 pt-16 text-white">
       <div className="site-container grid gap-12 border-b border-white/10 pb-12 md:grid-cols-2 lg:grid-cols-[1.3fr_.8fr_1fr]">
         <div>
-          <Logo light />
+          <Logo light image={business.logoImage} name={business.name} tagline={business.tagline} width={business.footerLogoWidth} height={business.footerLogoHeight} titleSize={business.logoTitleSize} sloganSize={business.logoSloganSize} placement="footer" />
           <p className="mt-6 max-w-md text-sm leading-7 text-white/60">{business.description}</p>
-          <p className="mt-4 text-sm font-extrabold text-orange-400">{business.tagline}</p>
         </div>
         <div>
           <h2 className="text-xs font-extrabold uppercase tracking-[.18em] text-white/45">Explore</h2>
