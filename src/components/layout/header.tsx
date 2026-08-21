@@ -33,8 +33,8 @@ export function Header({ business, navigation, homeLinks = false }: { business: 
             {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="relative py-3 text-[13px] font-extrabold text-[#4d4f49] transition after:absolute after:inset-x-0 after:bottom-1 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#f36b16] after:transition-transform hover:text-[#151714] hover:after:scale-x-100">{item.label}</a>)}
           </nav>
           <div className="flex shrink-0 items-center gap-2">
-            <ThemeToggle className="hidden sm:inline-flex" />
-            <a href={homeLinks ? "/#contact" : "#contact"} className="header-quote-button hidden min-h-11 items-center rounded-xl px-5 py-3 text-sm font-extrabold transition sm:inline-flex">Request a quote</a>
+            <ThemeToggle className="hidden xl:inline-flex" />
+            <a href={homeLinks ? "/#contact" : "#contact"} className="header-quote-button hidden min-h-11 items-center rounded-xl px-5 py-3 text-sm font-extrabold transition xl:inline-flex">Request a quote</a>
             <MobileMenu business={business} navigation={navigation} homeLinks={homeLinks} />
           </div>
         </div>

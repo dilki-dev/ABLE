@@ -1,28 +1,33 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Menu, MessageCircle, Phone, X } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ArrowRight, Menu, MessageCircle, Phone, X } from "lucide-react";
 import type { SiteContent } from "@/cms/content-schema";
 import { publicConfig } from "@/cms/public-config";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { Logo } from "./logo";
 
 export function MobileMenu({ business, navigation, homeLinks = false }: { business: SiteContent["business"]; navigation: SiteContent["navigation"]; homeLinks?: boolean }) {
   const [open, setOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
   const config = publicConfig(business);
 
   const closeMenu = useCallback((restoreFocus = false) => {
     setOpen(false);
-    if (restoreFocus) window.requestAnimationFrame(() => buttonRef.current?.focus());
+    if (restoreFocus) window.requestAnimationFrame(() => triggerRef.current?.focus());
   }, []);
 
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 1280px)");
-    const handleDesktop = (event: MediaQueryListEvent) => { if (event.matches) setOpen(false); };
+    const handleDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) closeMenu(false);
+    };
     desktop.addEventListener("change", handleDesktop);
     return () => desktop.removeEventListener("change", handleDesktop);
-  }, []);
+  }, [closeMenu]);
 
   useEffect(() => {
     if (!open) return;
@@ -31,58 +36,86 @@ export function MobileMenu({ business, navigation, homeLinks = false }: { busine
     const previousTop = document.body.style.top;
     const previousWidth = document.body.style.width;
     const previousOverflow = document.body.style.overflow;
+
     document.body.style.position = "fixed";
     document.body.style.top = `-${scrollY}px`;
     document.body.style.width = "100%";
     document.body.style.overflow = "hidden";
-    menuRef.current?.querySelector<HTMLAnchorElement>("a")?.focus();
+    closeRef.current?.focus();
+
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         closeMenu(true);
         return;
       }
-      if (event.key !== "Tab" || !menuRef.current) return;
-      const focusable = [...menuRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')];
-      if (!focusable.length) return;
+      if (event.key !== "Tab" || !sheetRef.current) return;
+      const focusable = [...sheetRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')];
       const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const last = focusable.at(-1);
       if (!first || !last) return;
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
+
     window.addEventListener("keydown", handleKey);
     return () => {
       document.body.style.position = previousPosition;
       document.body.style.top = previousTop;
       document.body.style.width = previousWidth;
       document.body.style.overflow = previousOverflow;
-      window.scrollTo({ top: scrollY, behavior: "instant" });
+      window.scrollTo(0, scrollY);
       window.removeEventListener("keydown", handleKey);
     };
   }, [closeMenu, open]);
 
+  const sheet = open && typeof document !== "undefined" ? createPortal(
+    <div ref={sheetRef} id="mobile-navigation" role="dialog" aria-modal="true" aria-labelledby="mobile-navigation-title" className="fixed inset-0 z-[80] h-[100dvh] w-full overflow-y-auto overscroll-contain bg-[#111310] text-white xl:hidden">
+      <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[env(safe-area-inset-top)] sm:px-8">
+        <div className="flex min-h-[68px] shrink-0 items-center justify-between gap-4 border-b border-white/10">
+          <Logo light image={business.logoImage} name={business.name} tagline={business.tagline} width={business.logoWidth} height={business.logoHeight} titleSize={business.logoTitleSize} sloganSize={business.logoSloganSize} placement="header" />
+          <button ref={closeRef} type="button" aria-label="Close navigation" onClick={() => closeMenu(true)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white transition hover:bg-white/15">
+            <X aria-hidden="true" className="h-5 w-5" />
+          </button>
+        </div>
+
+        <nav aria-label="Mobile navigation" className="py-6">
+          <p id="mobile-navigation-title" className="mb-3 text-xs font-extrabold uppercase tracking-[.18em] text-orange-400">Explore ABLE</p>
+          <div>
+            {navigation.map((item) => (
+              <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} onClick={() => closeMenu()} className="group flex min-h-13 items-center justify-between gap-4 border-b border-white/10 py-3 text-xl font-extrabold tracking-[-.02em] text-white transition hover:text-orange-300">
+                <span>{item.label}</span><ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-white/35 transition group-hover:translate-x-1 group-hover:text-orange-300" />
+              </a>
+            ))}
+          </div>
+        </nav>
+
+        <div className="mt-auto border-t border-white/10 pt-5">
+          <a href={homeLinks ? "/#contact" : "#contact"} onClick={() => closeMenu()} className="btn btn-primary w-full">Request a quote <ArrowRight aria-hidden="true" className="h-4 w-4" /></a>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <a href={config.phoneHref} className="btn border-white/15 bg-white/5 px-3 text-white hover:bg-white/10"><Phone aria-hidden="true" className="h-4 w-4" />Call</a>
+            <a href={config.whatsappUrl} target="_blank" rel="noreferrer" className="btn border-green-400/25 bg-green-400/10 px-3 text-green-200 hover:bg-green-400/15"><MessageCircle aria-hidden="true" className="h-4 w-4" />WhatsApp</a>
+          </div>
+          <div className="mt-4 flex min-h-14 items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[.04] px-4 py-2">
+            <div><p className="text-sm font-extrabold">Appearance</p><p className="mt-0.5 text-xs text-white/45">Light or dark theme</p></div>
+            <ThemeToggle className="border-white/15 bg-white/10 text-white hover:border-orange-300" />
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  ) : null;
+
   return (
     <div className="xl:hidden">
-      <button ref={buttonRef} type="button" aria-label={open ? "Close navigation" : "Open navigation"} aria-controls="mobile-navigation" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#e7e7e3] bg-white">
+      <button ref={triggerRef} type="button" aria-label={open ? "Close navigation" : "Open navigation"} aria-controls="mobile-navigation" aria-expanded={open} onClick={() => setOpen((value) => !value)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#e7e7e3] bg-white">
         {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
       </button>
-      {open ? <div className="fixed inset-x-0 bottom-0 top-[68px] sm:top-[74px] md:top-[106px]">
-        <button type="button" aria-label="Close navigation" onClick={() => closeMenu(true)} className="absolute inset-0 h-full w-full bg-[#151714]/45 backdrop-blur-[2px]" />
-        <div ref={menuRef} id="mobile-navigation" role="dialog" aria-modal="true" aria-labelledby="mobile-navigation-title" className="absolute right-0 top-0 h-full w-full max-w-[420px] min-w-0 overflow-y-auto overscroll-contain border-l border-[#e7e7e3] bg-white px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-2xl sm:px-6 sm:pt-6">
-          <nav aria-label="Mobile navigation" className="flex min-h-full flex-col">
-            <p id="mobile-navigation-title" className="mb-2 text-xs font-extrabold uppercase tracking-[.16em] text-[#f36b16]">Explore ABLE</p>
-            {navigation.map((item) => (
-              <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} onClick={() => closeMenu()} className="flex min-h-12 items-center border-b border-[#eeeeea] py-3 text-base font-extrabold transition hover:pl-1 hover:text-[#f36b16]">{item.label}</a>
-            ))}
-            <a href={homeLinks ? "/#contact" : "#contact"} onClick={() => closeMenu()} className="btn btn-primary mt-5">Request a quote</a>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <a href={config.phoneHref} className="btn btn-secondary px-3"><Phone aria-hidden="true" className="h-4 w-4" />Call</a>
-              <a href={config.whatsappUrl} target="_blank" rel="noreferrer" className="btn border-green-200 bg-green-50 px-3 text-green-800"><MessageCircle aria-hidden="true" className="h-4 w-4" />WhatsApp</a>
-            </div>
-            <div className="mt-4 flex items-center justify-between gap-4 border-t border-[#eeeeea] pt-4"><p className="min-w-0 text-xs leading-5 text-[#777771]">{business.address}</p><ThemeToggle /></div>
-          </nav>
-        </div>
-      </div> : null}
+      {sheet}
     </div>
   );
 }

@@ -154,11 +154,12 @@ img { max-width: 100%; }
 
 @media (max-width: 640px) {
   .site-container { width: min(100% - 36px, 1280px); }
+}
+
+@media (max-width: 1279px) {
   .header-brand-lockup { gap: .55rem; }
-  .header-brand-lockup .brand-logo-image { width: min(var(--logo-width), 68px); height: min(var(--logo-height), 40px); }
-  .header-brand-lockup .brand-logo-copy { max-width: 112px; }
-  .header-brand-lockup .brand-logo-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: min(var(--logo-title-size), 16px); }
-  .header-brand-lockup .brand-logo-slogan { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: min(var(--logo-slogan-size), 9px); }
+  .header-brand-lockup .brand-logo-image { width: min(var(--logo-width), 42px); height: min(var(--logo-height), 40px); }
+  .header-brand-lockup .brand-logo-copy { max-width: 174px; }
 }
 
 @media (min-width: 640px) {
