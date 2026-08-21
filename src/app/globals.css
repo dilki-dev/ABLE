@@ -100,6 +100,7 @@ img { max-width: 100%; }
 :focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
 .header-quote-button { border: 1px solid #ea580c; background: #f97316 !important; color: #ffffff !important; box-shadow: 0 8px 22px rgb(249 115 22 / .2); }
 .header-quote-button:hover { background: #df5f0e !important; border-color: #c9500a; }
+.uploaded-nav-logo { width: min(var(--logo-width), 240px); height: min(var(--logo-height), 56px); }
 .final-cta-quote-button,
 .hero-quote-button { border: 1px solid rgb(255 255 255 / .8); background: #ffffff !important; color: #111111 !important; box-shadow: 0 10px 28px rgb(17 17 17 / .16); }
 .final-cta-quote-button:hover,
@@ -116,6 +117,7 @@ img { max-width: 100%; }
 
 @media (max-width: 640px) {
   .site-container { width: min(100% - 28px, 1180px); }
+  .uploaded-nav-logo { width: min(var(--logo-width), 150px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

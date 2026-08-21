@@ -18,6 +18,7 @@ const iconOptions = ["droplets", "zap", "paint", "wrench", "bath", "chef", "laye
 
 export function ContentEditor({ initialContent, databaseReady, mediaReady, storedContent }: { initialContent: SiteContent; databaseReady: boolean; mediaReady: boolean; storedContent: boolean }) {
   const [content, setContent] = useState(initialContent);
+  const [logoUploading, setLogoUploading] = useState(false);
   const [savedContentJson, setSavedContentJson] = useState(() => JSON.stringify(initialContent));
   const [state, action, pending] = useActionState(saveContentAction, initialActionState);
   const submittedContentRef = useRef(savedContentJson);
@@ -48,6 +49,10 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
       target[String(path[path.length - 1])] = value;
       return copy as unknown as SiteContent;
     });
+  }
+
+  function updateLogoSize(key: "logoWidth" | "logoHeight", value: number) {
+    setContent((current) => ({ ...current, business: { ...current.business, [key]: value } }));
   }
 
   function removeCollectionItem(key: CollectionKey, index: number) {
@@ -124,7 +129,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
   }
 
   return (
-    <form action={action} onSubmit={() => { submittedContentRef.current = contentJson; }} aria-busy={pending} className="min-w-0 space-y-6">
+    <form action={action} onSubmit={() => { submittedContentRef.current = contentJson; }} aria-busy={pending || logoUploading} className="min-w-0 space-y-6">
       <input type="hidden" name="content" value={contentJson} readOnly />
       <div className="sticky top-2 z-20 flex flex-col gap-3 rounded-2xl border border-[#dfdfda] bg-white/95 p-4 shadow-lg backdrop-blur sm:top-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0"><h2 className="font-black">Website content</h2><p className="mt-1 text-xs text-[#777771]">Open a section, make changes, then publish once.</p><div className="mt-2 flex flex-wrap gap-3"><button type="button" onClick={() => setAllSections(true)} className="text-xs font-bold text-sky-700 hover:underline">Expand all</button><button type="button" onClick={() => setAllSections(false)} className="text-xs font-bold text-[#64645f] hover:underline">Collapse all</button></div></div>
@@ -132,7 +137,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
           <div aria-live="polite" className="min-w-0 sm:max-w-xs">
             {state.message && !(state.status === "success" && dirty) ? <p role={state.status === "error" ? "alert" : "status"} className={`text-xs font-bold leading-5 ${state.status === "success" ? "text-green-700" : "text-red-700"}`}>{state.message}</p> : <p className={`text-xs font-bold ${dirty ? "text-amber-700" : "text-green-700"}`}>{dirty ? "Unsaved changes" : storedContent ? "All changes published" : "Ready for first publish"}</p>}
           </div>
-          <button disabled={pending || !databaseReady} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#f97316] px-5 py-3 text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"><Save aria-hidden="true" className="h-4 w-4" />{pending ? "Publishing…" : "Publish changes"}</button>
+          <button disabled={pending || logoUploading || !databaseReady} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#f97316] px-5 py-3 text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-45"><Save aria-hidden="true" className="h-4 w-4" />{logoUploading ? "Uploading logo…" : pending ? "Publishing…" : "Publish changes"}</button>
         </div>
       </div>
 
@@ -151,7 +156,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
         </FieldGrid>
         <CmsField label="Business description" value={content.business.description} multiline onChange={(v) => updatePath(["business", "description"], v)} />
         <CmsField label="Address" value={content.business.address} multiline onChange={(v) => updatePath(["business", "address"], v)} />
-        <LogoMediaField value={content.business.logoImage} mediaReady={mediaReady} onChange={(v) => updatePath(["business", "logoImage"], v)} />
+        <LogoMediaField value={content.business.logoImage} width={content.business.logoWidth} height={content.business.logoHeight} mediaReady={mediaReady} onChange={(v) => updatePath(["business", "logoImage"], v)} onWidthChange={(v) => updateLogoSize("logoWidth", v)} onHeightChange={(v) => updateLogoSize("logoHeight", v)} onUploadingChange={setLogoUploading} />
       </EditorCard>
 
       <CollectionEditor title="Navigation" items={content.navigation} maxItems={12} fields={[{ key: "label", label: "Label" }, { key: "href", label: "Section link" }]} onChange={(i, key, v) => updatePath(["navigation", i, key], v)} onRemove={(i) => removeCollectionItem("navigation", i)} onAdd={() => addCollectionItem("navigation", { label: "New link", href: "#contact" })} />
@@ -223,27 +228,27 @@ function CmsField({ label, value, onChange, multiline = false, options }: { labe
   return <label className="block min-w-0 text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label}{options ? <select value={value} onChange={(e) => onChange(e.target.value)} className={className}>{options.map((option) => <option key={option}>{option}</option>)}</select> : multiline ? <textarea rows={4} value={value} onChange={(e) => onChange(e.target.value)} className={className} /> : <input value={value} onChange={(e) => onChange(e.target.value)} className={className} />}</label>;
 }
 
-function LogoMediaField({ value, onChange, mediaReady }: { value: string; onChange: (value: string) => void; mediaReady: boolean }) {
+function LogoMediaField({ value, width, height, onChange, onWidthChange, onHeightChange, onUploadingChange, mediaReady }: { value: string; width: number; height: number; onChange: (value: string) => void; onWidthChange: (value: number) => void; onHeightChange: (value: number) => void; onUploadingChange: (uploading: boolean) => void; mediaReady: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState("");
   const [uploading, setUploading] = useState(false);
-  async function upload() {
-    const file = inputRef.current?.files?.[0];
+  async function upload(file = inputRef.current?.files?.[0]) {
     if (!file) return setStatus("Choose a PNG logo first.");
     if (file.type !== "image/png") return setStatus("Use a PNG image for the navigation logo.");
     if (file.size > 4 * 1024 * 1024) return setStatus("The logo must be smaller than 4 MB.");
     setStatus("Uploading…");
     setUploading(true);
+    onUploadingChange(true);
     const data = new FormData(); data.set("file", file);
     try {
       const response = await fetch("/api/admin/media", { method: "POST", body: data });
       const result = await response.json() as { url?: string; message?: string };
       if (!response.ok || !result.url) return setStatus(result.message ?? "Upload failed.");
-      onChange(result.url); setStatus("Logo uploaded. Publish changes to show it in the navigation.");
+      onChange(result.url); setStatus("Logo uploaded and ready. Review the preview, then select Publish changes.");
     } catch { setStatus("Upload failed."); }
-    finally { setUploading(false); }
+    finally { setUploading(false); onUploadingChange(false); }
   }
-  return <div className="min-w-0"><CmsField label="Navigation logo PNG" value={value} onChange={onChange} /><div className="mt-3 grid gap-3 rounded-xl border border-[#e7e7e3] bg-white p-3 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-center"><div className="aspect-[4/3] overflow-hidden rounded-lg bg-[#f1f1ed]">{value ? <img src={value} alt="Current navigation logo" loading="lazy" className="h-full w-full object-contain p-2" /> : <div className="flex h-full items-center justify-center p-3 text-center text-xs font-bold text-[#777771]">Text logo active</div>}</div><div className="min-w-0"><p className="text-xs font-bold text-[#64645f]">Transparent PNG recommended · maximum 4 MB</p><div className="mt-2 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center"><input ref={inputRef} type="file" accept="image/png" disabled={!mediaReady || uploading} onChange={() => setStatus("")} className="min-w-0 max-w-full text-xs" /><button type="button" onClick={upload} disabled={!mediaReady || uploading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40"><ImageUp aria-hidden="true" className="h-4 w-4" />{uploading ? "Uploading…" : value ? "Replace" : "Upload"}</button>{value ? <button type="button" onClick={() => { onChange(""); setStatus("Text logo selected. Publish changes to update the navigation."); }} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold">Use text logo</button> : null}</div>{status ? <span role="status" className="mt-2 block text-xs font-semibold leading-5 text-[#64645f]">{status}</span> : null}</div></div></div>;
+  return <div className="min-w-0 space-y-3"><CmsField label="Navigation logo PNG" value={value} onChange={onChange} /><div className="grid gap-4 rounded-xl border border-[#e7e7e3] bg-white p-4 lg:grid-cols-[240px_minmax(0,1fr)]"><div className="flex min-h-28 items-center justify-center overflow-hidden rounded-lg bg-[#f1f1ed] p-3">{value ? <img src={value} alt="Current navigation logo" loading="lazy" style={{ width: Math.min(width, 216), height }} className="max-w-full object-contain" /> : <div className="text-center text-xs font-bold text-[#777771]">Text logo active</div>}</div><div className="min-w-0"><p className="text-xs font-bold text-[#64645f]">Transparent PNG recommended · maximum 4 MB. Selecting a file uploads it immediately.</p><input ref={inputRef} type="file" accept="image/png" disabled={!mediaReady || uploading} onChange={(event) => { setStatus(""); const file = event.target.files?.[0]; if (file) void upload(file); }} className="mt-3 min-w-0 max-w-full text-xs" /><div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center"><button type="button" onClick={() => void upload()} disabled={!mediaReady || uploading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40"><ImageUp aria-hidden="true" className="h-4 w-4" />{uploading ? "Uploading…" : "Upload again"}</button>{value ? <button type="button" onClick={() => { onChange(""); setStatus("Text logo selected. Publish changes to update the navigation."); }} disabled={uploading} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40">Use text logo</button> : null}</div>{status ? <span role="status" className="mt-2 block text-xs font-semibold leading-5 text-[#64645f]">{status}</span> : null}</div></div><div className="grid gap-4 rounded-xl border border-[#e7e7e3] bg-[#fafaf8] p-4 sm:grid-cols-2"><label className="block text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">Logo width <span className="normal-case tracking-normal text-[#111111]">{width}px</span><input type="range" min="80" max="240" step="4" value={width} disabled={uploading} onChange={(event) => onWidthChange(Number(event.target.value))} className="mt-3 block w-full accent-[#f97316]" /></label><label className="block text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">Logo height <span className="normal-case tracking-normal text-[#111111]">{height}px</span><input type="range" min="28" max="56" step="2" value={height} disabled={uploading} onChange={(event) => onHeightChange(Number(event.target.value))} className="mt-3 block w-full accent-[#f97316]" /></label><p className="text-xs leading-5 text-[#777771] sm:col-span-2">The mobile navigation automatically limits wide logos so the menu button remains visible.</p></div></div>;
 }
 
 function MediaField({ label, value, onChange, mediaReady }: { label: string; value: string; onChange: (value: string) => void; mediaReady: boolean }) {
