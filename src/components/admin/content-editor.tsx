@@ -51,7 +51,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
     });
   }
 
-  function updateLogoSize(key: "logoWidth" | "logoHeight", value: number) {
+  function updateLogoSize(key: "logoWidth" | "logoHeight" | "footerLogoWidth" | "footerLogoHeight" | "logoTitleSize" | "logoSloganSize", value: number) {
     setContent((current) => ({ ...current, business: { ...current.business, [key]: value } }));
   }
 
@@ -156,7 +156,7 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
         </FieldGrid>
         <CmsField label="Business description" value={content.business.description} multiline onChange={(v) => updatePath(["business", "description"], v)} />
         <CmsField label="Address" value={content.business.address} multiline onChange={(v) => updatePath(["business", "address"], v)} />
-        <LogoMediaField value={content.business.logoImage} width={content.business.logoWidth} height={content.business.logoHeight} mediaReady={mediaReady} onChange={(v) => updatePath(["business", "logoImage"], v)} onWidthChange={(v) => updateLogoSize("logoWidth", v)} onHeightChange={(v) => updateLogoSize("logoHeight", v)} onUploadingChange={setLogoUploading} />
+        <LogoMediaField value={content.business.logoImage} name={content.business.name} tagline={content.business.tagline} width={content.business.logoWidth} height={content.business.logoHeight} footerWidth={content.business.footerLogoWidth} footerHeight={content.business.footerLogoHeight} titleSize={content.business.logoTitleSize} sloganSize={content.business.logoSloganSize} mediaReady={mediaReady} onChange={(v) => updatePath(["business", "logoImage"], v)} onWidthChange={(v) => updateLogoSize("logoWidth", v)} onHeightChange={(v) => updateLogoSize("logoHeight", v)} onFooterWidthChange={(v) => updateLogoSize("footerLogoWidth", v)} onFooterHeightChange={(v) => updateLogoSize("footerLogoHeight", v)} onTitleSizeChange={(v) => updateLogoSize("logoTitleSize", v)} onSloganSizeChange={(v) => updateLogoSize("logoSloganSize", v)} onUploadingChange={setLogoUploading} />
       </EditorCard>
 
       <CollectionEditor title="Navigation" items={content.navigation} maxItems={12} fields={[{ key: "label", label: "Label" }, { key: "href", label: "Section link" }]} onChange={(i, key, v) => updatePath(["navigation", i, key], v)} onRemove={(i) => removeCollectionItem("navigation", i)} onAdd={() => addCollectionItem("navigation", { label: "New link", href: "#contact" })} />
@@ -228,13 +228,13 @@ function CmsField({ label, value, onChange, multiline = false, options }: { labe
   return <label className="block min-w-0 text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label}{options ? <select value={value} onChange={(e) => onChange(e.target.value)} className={className}>{options.map((option) => <option key={option}>{option}</option>)}</select> : multiline ? <textarea rows={4} value={value} onChange={(e) => onChange(e.target.value)} className={className} /> : <input value={value} onChange={(e) => onChange(e.target.value)} className={className} />}</label>;
 }
 
-function LogoMediaField({ value, width, height, onChange, onWidthChange, onHeightChange, onUploadingChange, mediaReady }: { value: string; width: number; height: number; onChange: (value: string) => void; onWidthChange: (value: number) => void; onHeightChange: (value: number) => void; onUploadingChange: (uploading: boolean) => void; mediaReady: boolean }) {
+function LogoMediaField({ value, name, tagline, width, height, footerWidth, footerHeight, titleSize, sloganSize, onChange, onWidthChange, onHeightChange, onFooterWidthChange, onFooterHeightChange, onTitleSizeChange, onSloganSizeChange, onUploadingChange, mediaReady }: { value: string; name: string; tagline: string; width: number; height: number; footerWidth: number; footerHeight: number; titleSize: number; sloganSize: number; onChange: (value: string) => void; onWidthChange: (value: number) => void; onHeightChange: (value: number) => void; onFooterWidthChange: (value: number) => void; onFooterHeightChange: (value: number) => void; onTitleSizeChange: (value: number) => void; onSloganSizeChange: (value: number) => void; onUploadingChange: (uploading: boolean) => void; mediaReady: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState("");
   const [uploading, setUploading] = useState(false);
   async function upload(file = inputRef.current?.files?.[0]) {
     if (!file) return setStatus("Choose a PNG logo first.");
-    if (file.type !== "image/png") return setStatus("Use a PNG image for the navigation logo.");
+    if (file.type !== "image/png") return setStatus("Use a PNG image for the navigation and footer logo.");
     if (file.size > 4 * 1024 * 1024) return setStatus("The logo must be smaller than 4 MB.");
     setStatus("Uploading…");
     setUploading(true);
@@ -248,7 +248,31 @@ function LogoMediaField({ value, width, height, onChange, onWidthChange, onHeigh
     } catch { setStatus("Upload failed."); }
     finally { setUploading(false); onUploadingChange(false); }
   }
-  return <div className="min-w-0 space-y-3"><CmsField label="Navigation logo PNG" value={value} onChange={onChange} /><div className="grid gap-4 rounded-xl border border-[#e7e7e3] bg-white p-4 lg:grid-cols-[240px_minmax(0,1fr)]"><div className="flex min-h-28 items-center justify-center overflow-hidden rounded-lg bg-[#f1f1ed] p-3">{value ? <img src={value} alt="Current navigation logo" loading="lazy" style={{ width: Math.min(width, 216), height }} className="max-w-full object-contain" /> : <div className="text-center text-xs font-bold text-[#777771]">Text logo active</div>}</div><div className="min-w-0"><p className="text-xs font-bold text-[#64645f]">Transparent PNG recommended · maximum 4 MB. Selecting a file uploads it immediately.</p><input ref={inputRef} type="file" accept="image/png" disabled={!mediaReady || uploading} onChange={(event) => { setStatus(""); const file = event.target.files?.[0]; if (file) void upload(file); }} className="mt-3 min-w-0 max-w-full text-xs" /><div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center"><button type="button" onClick={() => void upload()} disabled={!mediaReady || uploading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40"><ImageUp aria-hidden="true" className="h-4 w-4" />{uploading ? "Uploading…" : "Upload again"}</button>{value ? <button type="button" onClick={() => { onChange(""); setStatus("Text logo selected. Publish changes to update the navigation."); }} disabled={uploading} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40">Use text logo</button> : null}</div>{status ? <span role="status" className="mt-2 block text-xs font-semibold leading-5 text-[#64645f]">{status}</span> : null}</div></div><div className="grid gap-4 rounded-xl border border-[#e7e7e3] bg-[#fafaf8] p-4 sm:grid-cols-2"><label className="block text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">Logo width <span className="normal-case tracking-normal text-[#111111]">{width}px</span><input type="range" min="80" max="240" step="4" value={width} disabled={uploading} onChange={(event) => onWidthChange(Number(event.target.value))} className="mt-3 block w-full accent-[#f97316]" /></label><label className="block text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">Logo height <span className="normal-case tracking-normal text-[#111111]">{height}px</span><input type="range" min="28" max="56" step="2" value={height} disabled={uploading} onChange={(event) => onHeightChange(Number(event.target.value))} className="mt-3 block w-full accent-[#f97316]" /></label><p className="text-xs leading-5 text-[#777771] sm:col-span-2">The mobile navigation automatically limits wide logos so the menu button remains visible.</p></div></div>;
+  return (
+    <div className="min-w-0 space-y-3">
+      <CmsField label="Shared navigation and footer logo PNG" value={value} onChange={onChange} />
+      <div className="grid gap-4 rounded-xl border border-[#e7e7e3] bg-white p-4 lg:grid-cols-[minmax(240px,1fr)_minmax(0,1fr)]">
+        <div className="flex min-h-32 items-center justify-center overflow-hidden rounded-lg bg-[#f1f1ed] p-4">
+          <div className="flex min-w-0 items-center gap-3">
+            {value ? <img src={value} alt="Current shared logo" loading="lazy" style={{ width: Math.min(width, 160), height }} className="max-w-full shrink-0 object-contain" /> : <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#f97316] text-lg font-black text-white">A</span>}
+            <span className="min-w-0 leading-none"><span style={{ fontSize: titleSize, lineHeight: 1.08 }} className="block font-black text-[#111111]">{name}</span><span style={{ fontSize: sloganSize, lineHeight: 1.2 }} className="mt-1.5 block font-extrabold uppercase tracking-[.1em] text-[#64645f]">{tagline}</span></span>
+          </div>
+        </div>
+        <div className="min-w-0"><p className="text-xs font-bold text-[#64645f]">Transparent PNG recommended · maximum 4 MB. Selecting a file uploads it immediately.</p><input ref={inputRef} type="file" accept="image/png" disabled={!mediaReady || uploading} onChange={(event) => { setStatus(""); const file = event.target.files?.[0]; if (file) void upload(file); }} className="mt-3 min-w-0 max-w-full text-xs" /><div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center"><button type="button" onClick={() => void upload()} disabled={!mediaReady || uploading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40"><ImageUp aria-hidden="true" className="h-4 w-4" />{uploading ? "Uploading…" : "Upload again"}</button>{value ? <button type="button" onClick={() => { onChange(""); setStatus("Text logo selected. Publish changes to update the navigation and footer."); }} disabled={uploading} className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#d9d9d4] px-3 py-2 text-sm font-bold disabled:opacity-40">Use text logo</button> : null}</div>{status ? <span role="status" className="mt-2 block text-xs font-semibold leading-5 text-[#64645f]">{status}</span> : null}</div>
+      </div>
+      <LogoSizePanel title="Navigation logo size" note="Mobile navigation automatically limits wide logos so the menu button remains visible."><LogoRange label="Width" value={width} min={80} max={240} step={4} disabled={uploading} onChange={onWidthChange} /><LogoRange label="Height" value={height} min={28} max={56} step={2} disabled={uploading} onChange={onHeightChange} /></LogoSizePanel>
+      <LogoSizePanel title="Footer logo size"><LogoRange label="Width" value={footerWidth} min={80} max={280} step={4} disabled={uploading} onChange={onFooterWidthChange} /><LogoRange label="Height" value={footerHeight} min={28} max={72} step={2} disabled={uploading} onChange={onFooterHeightChange} /></LogoSizePanel>
+      <LogoSizePanel title="Company name and slogan size" note="These text sizes apply beside the logo in both the navigation and footer."><LogoRange label="Company name" value={titleSize} min={12} max={24} step={1} disabled={uploading} onChange={onTitleSizeChange} /><LogoRange label="Slogan" value={sloganSize} min={8} max={14} step={1} disabled={uploading} onChange={onSloganSizeChange} /></LogoSizePanel>
+    </div>
+  );
+}
+
+function LogoSizePanel({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
+  return <fieldset className="grid gap-4 rounded-xl border border-[#e7e7e3] bg-[#fafaf8] p-4 sm:grid-cols-2"><legend className="px-1 text-xs font-black uppercase tracking-[.1em] text-[#64645f]">{title}</legend>{children}{note ? <p className="text-xs leading-5 text-[#777771] sm:col-span-2">{note}</p> : null}</fieldset>;
+}
+
+function LogoRange({ label, value, min, max, step, disabled, onChange }: { label: string; value: number; min: number; max: number; step: number; disabled: boolean; onChange: (value: number) => void }) {
+  return <label className="block text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label} <span className="normal-case tracking-normal text-[#111111]">{value}px</span><input type="range" min={min} max={max} step={step} value={value} disabled={disabled} onChange={(event) => onChange(Number(event.target.value))} className="mt-3 block w-full accent-[#f97316]" /></label>;
 }
 
 function MediaField({ label, value, onChange, mediaReady }: { label: string; value: string; onChange: (value: string) => void; mediaReady: boolean }) {
