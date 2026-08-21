@@ -18,22 +18,22 @@ export function Footer({ business, navigation, homeLinks = false }: { business: 
         <div>
           <h2 className="text-xs font-extrabold uppercase tracking-[.18em] text-white/45">Explore</h2>
           <nav aria-label="Footer navigation" className="mt-5 space-y-3">
-            {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="block text-sm font-semibold text-white/70 hover:text-white">{item.label}</a>)}
+            {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="inline-flex min-h-11 items-center text-sm font-semibold text-white/70 hover:text-white">{item.label}</a>)}
           </nav>
         </div>
         <div>
           <h2 className="text-xs font-extrabold uppercase tracking-[.18em] text-white/45">Contact</h2>
           <div className="mt-5 space-y-4 text-sm text-white/70">
-            <a href={config.phoneHref} className="flex gap-3 hover:text-white"><Phone aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />{business.phoneDisplay}</a>
-            <a href={`mailto:${business.email}`} className="flex gap-3 break-all hover:text-white"><Mail aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />{business.email}</a>
-            <a href={config.mapsUrl} target="_blank" rel="noreferrer" className="flex gap-3 leading-6 hover:text-white"><MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />{business.address}</a>
+            <a href={config.phoneHref} className="flex min-h-11 items-center gap-3 hover:text-white"><Phone aria-hidden="true" className="h-4 w-4 shrink-0 text-orange-400" />{business.phoneDisplay}</a>
+            <a href={`mailto:${business.email}`} className="flex min-h-11 items-center gap-3 break-all hover:text-white"><Mail aria-hidden="true" className="h-4 w-4 shrink-0 text-orange-400" />{business.email}</a>
+            <a href={config.mapsUrl} target="_blank" rel="noreferrer" className="flex min-h-11 items-start gap-3 py-2 leading-6 hover:text-white"><MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />{business.address}</a>
           </div>
         </div>
         <div>
           <h2 className="text-xs font-extrabold uppercase tracking-[.18em] text-white/45">Legal</h2>
           <nav aria-label="Legal navigation" className="mt-5 space-y-3 text-sm font-semibold text-white/70">
-            <Link href="/privacy" className="block hover:text-white">Privacy policy</Link>
-            <Link href="/terms" className="block hover:text-white">Terms &amp; conditions</Link>
+            <Link href="/privacy" className="flex min-h-11 items-center hover:text-white">Privacy policy</Link>
+            <Link href="/terms" className="flex min-h-11 items-center hover:text-white">Terms &amp; conditions</Link>
           </nav>
         </div>
       </div>

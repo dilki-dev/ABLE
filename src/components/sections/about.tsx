@@ -11,7 +11,7 @@ export function About({ content }: { content: SiteContent["about"] }) {
         <Reveal className="relative">
           <div className="absolute -left-5 -top-5 h-full w-full rounded-[2rem] border border-sky-200 bg-sky-50" />
           <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-stone-100 shadow-[0_26px_70px_rgba(21,23,20,.12)]"><Image src={content.image} alt="ABLE property maintenance team reviewing a wall repair in a Sri Lankan home" fill sizes="(max-width: 1024px) 100vw, 52vw" className="object-cover" /></div>
-          <div className="absolute -bottom-5 right-3 rounded-2xl border border-white/10 bg-[#151714] p-5 text-white shadow-xl sm:right-7"><p className="text-xs font-extrabold uppercase tracking-[.14em] text-sky-300">{content.badgeLabel}</p><p className="mt-2 flex items-center gap-2 font-extrabold"><MapPin aria-hidden="true" className="h-4 w-4 text-orange-400" /> {content.badgeValue}</p></div>
+          <div className="absolute -bottom-5 left-3 right-3 rounded-2xl border border-white/10 bg-[#151714] p-4 text-white shadow-xl sm:left-auto sm:right-7 sm:max-w-md sm:p-5"><p className="text-xs font-extrabold uppercase tracking-[.14em] text-sky-300">{content.badgeLabel}</p><p className="mt-2 flex items-start gap-2 font-extrabold"><MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" /> <span className="min-w-0">{content.badgeValue}</span></p></div>
         </Reveal>
         <Reveal>
           <SectionHeading eyebrow={content.eyebrow} title={content.title} description={content.description} />

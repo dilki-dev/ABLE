@@ -11,13 +11,13 @@ export function Hero({ business, content }: { business: SiteContent["business"];
       <div className="architectural-grid absolute inset-0 -z-20 opacity-70" />
       <div className="absolute -left-32 top-10 -z-10 h-80 w-80 rounded-full bg-orange-100/65 blur-3xl" />
       <div className="absolute right-0 top-0 -z-10 h-96 w-96 rounded-full bg-sky-100/70 blur-3xl" />
-      <div className="site-container grid min-h-[690px] items-center gap-14 py-16 lg:grid-cols-[minmax(0,1fr)_minmax(440px,.9fr)] lg:py-20 xl:gap-20">
-        <Reveal className="min-w-0 py-4">
+      <div className="site-container grid items-center gap-12 py-12 sm:gap-14 sm:py-16 lg:min-h-[690px] lg:grid-cols-[minmax(0,1fr)_minmax(440px,.9fr)] lg:py-20 xl:gap-20">
+        <Reveal className="min-w-0 py-2 sm:py-4">
           <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3.5 py-2 text-[11px] font-extrabold uppercase leading-5 tracking-[.14em] text-orange-800">
             <span className="status-pulse h-2 w-2 shrink-0 rounded-full bg-[#f36b16]" /> {content.badge}
           </div>
           <p className="mt-7 flex items-start gap-2 text-xs font-extrabold uppercase leading-6 tracking-[.14em] text-sky-700"><MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" /> {content.location}</p>
-          <h1 className="mt-4 max-w-4xl break-words text-[clamp(2.75rem,6vw,5.3rem)] font-black leading-[.98] tracking-[-.06em] text-balance">{content.headline}<br /><span className="text-[#f36b16]">{content.headlineAccent}</span></h1>
+          <h1 className="mt-4 max-w-4xl break-words text-[clamp(2.25rem,11vw,5.3rem)] font-black leading-[1.02] tracking-[-.055em] text-balance lg:leading-[.98] lg:tracking-[-.06em]">{content.headline}<br /><span className="text-[#f36b16]">{content.headlineAccent}</span></h1>
           <p className="body-copy mt-7 max-w-2xl text-base sm:text-lg">{content.description}</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <a href="#contact" className="btn btn-primary hero-quote-button">Request a quote <ArrowRight aria-hidden="true" className="h-4 w-4" /></a>
@@ -31,7 +31,7 @@ export function Hero({ business, content }: { business: SiteContent["business"];
         <Reveal className="relative mx-auto w-full max-w-[620px] lg:mx-0">
           <div className="absolute -left-5 -top-5 h-28 w-28 rounded-[1.5rem] border border-sky-200 bg-sky-100/75" />
           <div className="absolute -bottom-5 -right-4 h-36 w-36 rounded-[1.5rem] bg-orange-100" />
-          <div className="relative aspect-[4/4.35] overflow-hidden rounded-[2rem] border-[10px] border-white bg-stone-100 shadow-[0_30px_90px_rgba(21,23,20,.18)] sm:aspect-[5/4] lg:aspect-[4/4.35]">
+          <div className="relative aspect-[4/4.35] overflow-hidden rounded-[1.5rem] border-[6px] border-white bg-stone-100 shadow-[0_30px_90px_rgba(21,23,20,.18)] sm:aspect-[5/4] sm:rounded-[2rem] sm:border-[10px] lg:aspect-[4/4.35]">
             <Image src={content.image} alt="Property maintenance professional working in a modern Sri Lankan home" fill priority sizes="(max-width: 1024px) 100vw, 46vw" className="object-cover object-center" />
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/50 to-transparent" />
           </div>

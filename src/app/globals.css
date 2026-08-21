@@ -36,6 +36,8 @@ html.dark {
 
 html { scroll-behavior: smooth; scroll-padding-top: 108px; }
 
+:where(section[id]) { scroll-margin-top: 88px; }
+
 body {
   margin: 0;
   background: var(--canvas);
@@ -105,7 +107,7 @@ img { max-width: 100%; }
 ::selection { background: #fed7aa; color: var(--ink); }
 
 .site-container { width: min(1280px, calc(100% - 48px)); margin-inline: auto; }
-.section-space { padding-block: clamp(5rem, 8vw, 8rem); }
+.section-space { padding-block: clamp(4rem, 8vw, 8rem); }
 .eyebrow { color: var(--orange); font-size: .72rem; font-weight: 850; letter-spacing: .18em; line-height: 1.4; text-transform: uppercase; }
 .grid-texture { background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 44px 44px; }
 .dot-texture { background-image: radial-gradient(rgba(17,17,17,.12) 1px, transparent 1px); background-size: 16px 16px; }
@@ -126,6 +128,7 @@ img { max-width: 100%; }
 .premium-card { border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); box-shadow: 0 1px 0 rgb(21 23 20 / .02); }
 .section-title { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 850; letter-spacing: -.045em; line-height: 1.08; text-wrap: balance; }
 .body-copy { color: var(--muted); line-height: 1.8; }
+.floating-whatsapp { bottom: max(1.25rem, env(safe-area-inset-bottom)); }
 
 .skip-link { position: fixed; z-index: 100; top: 12px; left: 12px; transform: translateY(-150%); border-radius: 999px; background: #111111; color: #ffffff; padding: 12px 18px; font-weight: 800; transition: transform 180ms ease; }
 .skip-link:focus { transform: translateY(0); }
@@ -152,10 +155,18 @@ img { max-width: 100%; }
 @media (max-width: 640px) {
   .site-container { width: min(100% - 36px, 1280px); }
   .header-brand-lockup { gap: .55rem; }
-  .header-brand-lockup .brand-logo-image { width: min(var(--logo-width), 68px); }
+  .header-brand-lockup .brand-logo-image { width: min(var(--logo-width), 68px); height: min(var(--logo-height), 40px); }
   .header-brand-lockup .brand-logo-copy { max-width: 112px; }
-  .header-brand-lockup .brand-logo-title { font-size: min(var(--logo-title-size), 16px); }
-  .header-brand-lockup .brand-logo-slogan { font-size: min(var(--logo-slogan-size), 9px); }
+  .header-brand-lockup .brand-logo-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: min(var(--logo-title-size), 16px); }
+  .header-brand-lockup .brand-logo-slogan { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: min(var(--logo-slogan-size), 9px); }
+}
+
+@media (min-width: 640px) {
+  .floating-whatsapp { bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+}
+
+@media (min-width: 768px) {
+  :where(section[id]) { scroll-margin-top: 122px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

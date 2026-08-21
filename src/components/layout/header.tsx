@@ -27,13 +27,13 @@ export function Header({ business, navigation, homeLinks = false }: { business: 
         </div>
       </div>
       <div className={`relative border-b bg-white/95 backdrop-blur-lg transition-colors ${scrolled ? "border-[#ddded8]" : "border-[#e7e7e3]"}`}>
-        <div className="site-container flex h-[74px] items-center justify-between gap-4 lg:h-[78px]">
+        <div className="site-container flex h-[68px] items-center justify-between gap-3 sm:h-[74px] lg:h-[78px]">
           <Logo image={business.logoImage} name={business.name} tagline={business.tagline} width={business.logoWidth} height={business.logoHeight} titleSize={business.logoTitleSize} sloganSize={business.logoSloganSize} placement="header" />
           <nav aria-label="Primary navigation" className="hidden items-center gap-5 xl:flex">
             {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="relative py-3 text-[13px] font-extrabold text-[#4d4f49] transition after:absolute after:inset-x-0 after:bottom-1 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#f36b16] after:transition-transform hover:text-[#151714] hover:after:scale-x-100">{item.label}</a>)}
           </nav>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
+          <div className="flex shrink-0 items-center gap-2">
+            <ThemeToggle className="hidden sm:inline-flex" />
             <a href={homeLinks ? "/#contact" : "#contact"} className="header-quote-button hidden min-h-11 items-center rounded-xl px-5 py-3 text-sm font-extrabold transition sm:inline-flex">Request a quote</a>
             <MobileMenu business={business} navigation={navigation} homeLinks={homeLinks} />
           </div>
