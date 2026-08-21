@@ -25,6 +25,13 @@ export async function ensureDatabaseSchema() {
         )
       `;
       await sql`
+        UPDATE cms_documents
+        SET content = REPLACE(content::text, 'hello@ablepropertymaintenance.lk', 'hello@ableconstructions.lk')::jsonb,
+            updated_at = NOW()
+        WHERE key = 'site-content'
+          AND content::text LIKE '%hello@ablepropertymaintenance.lk%'
+      `;
+      await sql`
         CREATE TABLE IF NOT EXISTS enquiries (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           reference TEXT UNIQUE,

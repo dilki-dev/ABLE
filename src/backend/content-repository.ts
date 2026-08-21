@@ -82,6 +82,8 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
   if (!isDatabaseConfigured()) return defaultSiteContent;
 
   try {
+    // Run idempotent schema/data migrations even when the content result itself is served from Next's data cache.
+    await ensureDatabaseSchema();
     return (await getCachedStoredContent())?.content ?? defaultSiteContent;
   } catch (error) {
     console.error("Unable to load CMS content for the public website.", { errorType: error instanceof Error ? error.name : "UnknownError" });
