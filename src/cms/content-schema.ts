@@ -64,6 +64,8 @@ export const siteContentSchema = z.object({
   business: z.object({
     name: shortText,
     logoImage: optionalImagePath,
+    logoWidth: z.number().int().min(80).max(240).default(180),
+    logoHeight: z.number().int().min(28).max(56).default(44),
     tagline: shortText,
     description: paragraph,
     address: paragraph,
@@ -134,6 +136,8 @@ export const defaultSiteContent: SiteContent = siteContentSchema.parse({
   business: {
     name: siteConfig.name,
     logoImage: "",
+    logoWidth: 180,
+    logoHeight: 44,
     tagline: siteConfig.tagline,
     description: siteConfig.description,
     address: siteConfig.address,
