@@ -7,6 +7,8 @@ import { logoutAction } from "./actions";
 import { ContentEditor } from "@/components/admin/content-editor";
 import { EnquiriesPanel } from "@/components/admin/enquiries-panel";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { listAdminProjects, listAdminTestimonials, type Project, type Testimonial } from "@/backend/portfolio";
+import { ProjectsPanel, TestimonialsPanel } from "@/components/admin/portfolio-panels";
 
 export default async function AdminPage() {
   if (!(await hasAdminSession())) redirect("/admin/login");
@@ -14,12 +16,16 @@ export default async function AdminPage() {
   const databaseReady = adminContent.databaseReady;
   const mediaReady = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
   let enquiries: Enquiry[] = [];
+  let projects: Project[] = [];
+  let testimonials: Testimonial[] = [];
   let enquiriesError: string | null = null;
   if (databaseReady) {
     try {
       enquiries = await listEnquiries();
+      projects = await listAdminProjects();
+      testimonials = await listAdminTestimonials();
     } catch (error) {
-      console.error("Unable to load CMS enquiries.", error);
+      console.error("Unable to load CMS dashboard data.", { errorType: error instanceof Error ? error.name : "UnknownError" });
       enquiriesError = "The enquiry inbox could not be loaded. Please refresh before making enquiry updates.";
     }
   }
@@ -41,16 +47,19 @@ export default async function AdminPage() {
           </div>
         </div>
       </header>
-      <div className="mx-auto max-w-[1400px] px-4 pt-6 sm:px-8 sm:pt-8">
-        <section aria-label="Dashboard summary" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <nav aria-label="Admin sections" className="sticky top-0 z-30 border-b border-[#dfdfda] bg-white/95 backdrop-blur"><div className="mx-auto flex max-w-[1400px] gap-2 overflow-x-auto px-4 py-2 sm:px-8">{[["Dashboard","#admin-dashboard"],["Enquiries","#admin-enquiries"],["Projects","#admin-projects"],["Testimonials","#admin-testimonials"],["Site content","#admin-site-content"]].map(([label,href]) => <a key={href} href={href} className="shrink-0 rounded-lg px-3 py-2 text-xs font-extrabold text-[#64645f] hover:bg-[#f4f4f1] hover:text-[#111111]">{label}</a>)}</div></nav>
+      <div id="admin-dashboard" className="mx-auto max-w-[1400px] scroll-mt-20 px-4 pt-6 sm:px-8 sm:pt-8">
+        <section aria-label="Dashboard summary" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
           <div className="rounded-2xl border border-[#dfdfda] bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Publishing</p><Clock3 aria-hidden="true" className="h-5 w-5 text-[#38bdf8]" /></div><p className="mt-3 text-sm font-black">{publishedLabel}</p><p className="mt-1 text-xs text-[#777771]">Sri Lanka time</p></div>
           <div className="rounded-2xl border border-[#dfdfda] bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Services</p><BriefcaseBusiness aria-hidden="true" className="h-5 w-5 text-[#f97316]" /></div><p className="mt-3 text-2xl font-black">{adminContent.content.services.length}</p><p className="mt-1 text-xs text-[#777771]">Published service cards</p></div>
           <div className="rounded-2xl border border-[#dfdfda] bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Enquiries</p><Inbox aria-hidden="true" className="h-5 w-5 text-[#38bdf8]" /></div><p className="mt-3 text-2xl font-black">{newEnquiries}</p><p className="mt-1 text-xs text-[#777771]">New of {enquiries.length} total</p></div>
           <div className={`rounded-2xl border p-4 shadow-sm ${mediaReady ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"}`}><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Media</p><ImageIcon aria-hidden="true" className={`h-5 w-5 ${mediaReady ? "text-green-700" : "text-amber-700"}`} /></div><p className="mt-3 text-sm font-black">{mediaReady ? "Uploads connected" : "Setup required"}</p><p className="mt-1 text-xs text-[#777771]">{mediaReady ? "Vercel Blob is ready" : "Redeploy after connecting Blob"}</p></div>
+          <div className="rounded-2xl border border-[#dfdfda] bg-white p-4 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Projects</p><p className="mt-3 text-2xl font-black">{projects.filter((item) => item.status === "published").length}</p><p className="mt-1 text-xs text-[#777771]">Published of {projects.length} total</p></div>
+          <div className="rounded-2xl border border-[#dfdfda] bg-white p-4 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Testimonials</p><p className="mt-3 text-2xl font-black">{testimonials.filter((item) => item.status === "published").length}</p><p className="mt-1 text-xs text-[#777771]">Published of {testimonials.length} total</p></div>
         </section>
       </div>
       <div className="mx-auto grid max-w-[1400px] gap-7 px-4 py-6 sm:px-8 sm:py-8 xl:grid-cols-[minmax(0,1fr)_390px]">
-        <div className="min-w-0">
+        <div id="admin-site-content" className="min-w-0 scroll-mt-20">
           {adminContent.error ? <div className="mb-6 flex gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><AlertTriangle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" /><p>{adminContent.error}</p></div> : null}
           <ContentEditor initialContent={adminContent.content} databaseReady={databaseReady} mediaReady={mediaReady} storedContent={adminContent.storedContent} />
         </div>
@@ -66,6 +75,7 @@ export default async function AdminPage() {
           </section>
         </aside>
       </div>
+      <div className="mx-auto max-w-[1400px] space-y-7 px-4 pb-10 sm:px-8"><ProjectsPanel projects={projects} mediaReady={mediaReady} /><TestimonialsPanel testimonials={testimonials} /></div>
     </main>
   );
 }

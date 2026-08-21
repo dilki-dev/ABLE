@@ -23,17 +23,20 @@ export const viewport: Viewport = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getSiteContent();
-  const seoTitle = `${content.business.name} | Property Maintenance Colombo`;
+  const seoTitle = "ABLE Property Maintenance | Property Maintenance & Renovation Colombo";
+  const seoDescription = "Property maintenance, repairs and renovations for homes, landlords and businesses across Colombo and Greater Colombo, with selected projects across Sri Lanka.";
+  const shareImage = "/opengraph-image";
   return {
     metadataBase: new URL(siteConfig.siteUrl),
     title: { default: seoTitle, template: `%s | ${content.business.name}` },
-    description: content.business.description,
+    description: seoDescription,
     applicationName: content.business.name,
     authors: [{ name: content.business.name }],
     creator: content.business.name,
     publisher: content.business.name,
     category: "Property maintenance",
     keywords: ["property maintenance Sri Lanka", "property repairs Colombo", "plumbing Dehiwala", "electrical repairs Colombo", "property refurbishment Sri Lanka"],
+    verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
     alternates: { canonical: "/", languages: { "en-LK": "/" } },
     formatDetection: { email: false, address: false, telephone: false },
     icons: { icon: "/favicon.ico" },
@@ -44,10 +47,10 @@ export async function generateMetadata(): Promise<Metadata> {
       url: "/",
       siteName: content.business.name,
       title: seoTitle,
-      description: content.business.description,
-      images: [{ url: content.hero.image, alt: "ABLE property maintenance professional working on a modern Sri Lankan home" }],
+      description: seoDescription,
+      images: [{ url: shareImage, alt: `${content.business.name} property maintenance and renovation services` }],
     },
-    twitter: { card: "summary_large_image", title: seoTitle, description: content.business.description, images: [content.hero.image] },
+    twitter: { card: "summary_large_image", title: seoTitle, description: seoDescription, images: [shareImage] },
   };
 }
 

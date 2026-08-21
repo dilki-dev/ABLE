@@ -13,7 +13,9 @@ function sessionKey() {
 }
 
 export function isAdminConfigured() {
-  return Boolean(process.env.ADMIN_PASSWORD && process.env.SESSION_SECRET && process.env.SESSION_SECRET.length >= 32);
+  const hashMatch = process.env.ADMIN_PASSWORD_HASH?.match(/^\$2[aby]\$(\d{2})\$.{53}$/);
+  const cost = Number(hashMatch?.[1] ?? 0);
+  return Boolean(hashMatch && cost >= 10 && cost <= 14 && process.env.SESSION_SECRET && process.env.SESSION_SECRET.length >= 32);
 }
 
 export async function createAdminSession() {
@@ -23,14 +25,14 @@ export async function createAdminSession() {
     .setIssuer(issuer)
     .setAudience(audience)
     .setIssuedAt()
-    .setExpirationTime("12h")
+    .setExpirationTime("8h")
     .sign(sessionKey());
 
   (await cookies()).set(cookieName, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 60 * 60 * 12,
+    maxAge: 60 * 60 * 8,
     path: "/",
     priority: "high",
   });

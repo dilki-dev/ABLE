@@ -25,8 +25,6 @@ export function Footer({ business, navigation, homeLinks = false }: { business: 
             <a href={config.phoneHref} className="flex gap-3 hover:text-white"><Phone aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />{business.phoneDisplay}</a>
             <a href={`mailto:${business.email}`} className="flex gap-3 break-all hover:text-white"><Mail aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />{business.email}</a>
             <a href={config.mapsUrl} target="_blank" rel="noreferrer" className="flex gap-3 leading-6 hover:text-white"><MapPin aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />{business.address}</a>
-            <p className="rounded-lg border border-amber-400/20 bg-amber-400/5 p-3 text-xs leading-5 text-amber-200">Secondary number supplied: {business.secondaryPhoneDisplay}. Verify the full international format before publishing it as a call link.</p>
-            {/* TODO: Add verified social profile links here when ABLE provides them. */}
           </div>
         </div>
       </div>

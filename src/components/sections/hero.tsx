@@ -20,9 +20,9 @@ export function Hero({ business, content }: { business: SiteContent["business"];
           <h1 className="mt-5 break-words text-4xl font-black leading-[1.04] tracking-[-.045em] sm:text-6xl lg:text-7xl">{content.headline}<br /><span className="text-[#f97316]">{content.headlineAccent}</span></h1>
           <p className="mt-6 max-w-2xl text-base leading-8 text-white/75 sm:text-xl">{content.description}</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <a href={config.phoneHref} className="motion-lift inline-flex items-center justify-center gap-2 rounded-xl bg-[#f97316] px-6 py-4 text-sm font-extrabold text-white transition hover:bg-[#df5f0e]"><Phone aria-hidden="true" className="h-4 w-4" /> Call now</a>
+            <a href={config.phoneHref} className="motion-lift inline-flex items-center justify-center gap-2 rounded-xl bg-[#f97316] px-6 py-4 text-sm font-extrabold text-white transition hover:bg-[#df5f0e]"><Phone aria-hidden="true" className="h-4 w-4" /> Call Us</a>
             <a href="#contact" className="hero-quote-button motion-lift inline-flex items-center justify-center gap-2 rounded-xl px-6 py-4 text-sm font-extrabold backdrop-blur">Request a quote <ArrowRight aria-hidden="true" className="h-4 w-4" /></a>
-            <a href={config.whatsappUrl} target="_blank" rel="noreferrer" className="motion-lift inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-4 text-sm font-extrabold text-white backdrop-blur transition hover:border-green-400 hover:bg-green-600"><MessageCircle aria-hidden="true" className="h-4 w-4" /> WhatsApp</a>
+            <a href={config.whatsappUrl} target="_blank" rel="noreferrer" className="motion-lift inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-4 text-sm font-extrabold text-white backdrop-blur transition hover:border-green-400 hover:bg-green-600"><MessageCircle aria-hidden="true" className="h-4 w-4" /> WhatsApp Us</a>
           </div>
           <div className="mt-9 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-white/70">
             {content.bullets.map((bullet) => <span key={bullet} className="flex items-center gap-2"><CheckCircle2 aria-hidden="true" className="h-4 w-4 text-sky-300" /> {bullet}</span>)}

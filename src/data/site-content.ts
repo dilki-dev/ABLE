@@ -20,7 +20,8 @@ export const services = [
   { icon: "layers", title: "Flooring", text: "Installation and repair support for suitable floor finishes." },
   { icon: "hammer", title: "Carpentry", text: "Doors, cabinetry, fittings and made-to-measure timber repairs." },
   { icon: "leaf", title: "Gardening & Outdoor Maintenance", text: "Tidy, cared-for outdoor spaces and routine upkeep." },
-  { icon: "building", title: "Property Refurbishment", text: "Coordinated upgrades that refresh tired residential spaces." },
+  { icon: "building", title: "Property Refurbishment", text: "Coordinated repairs and improvements that refresh tired residential and commercial spaces." },
+  { icon: "building", title: "Property Renovation", text: "Planned property upgrades combining suitable trades, finishes and practical improvements." },
   { icon: "siren", title: "Emergency Repairs", text: "Urgent repair enquiries assessed according to availability." },
   { icon: "key", title: "Landlord Property Maintenance", text: "Practical maintenance support between and during tenancies." },
 ] as const;
@@ -34,15 +35,6 @@ export const reasons = [
   { title: "Local understanding", text: "Solutions considered for Sri Lankan homes, climate and property needs." },
 ] as const;
 
-export const projects = [
-  { title: "Bathroom fitting example", service: "Bathroom Fitting", location: "Colombo area", image: "/images/project-bathroom-fitting.png" },
-  { title: "Exterior refresh example", service: "Painting & Decorating", location: "Dehiwala area", image: "/images/project-exterior-painting.png" },
-  { title: "Kitchen joinery example", service: "Kitchen Fitting", location: "Colombo area", image: "/images/project-kitchen-carpentry.png" },
-  { title: "Shower upgrade example", service: "Plumbing", location: "Sri Lanka", image: "/images/project-bathroom-fitting.png" },
-  { title: "Property repaint example", service: "Property Refurbishment", location: "Sri Lanka", image: "/images/project-exterior-painting.png" },
-  { title: "Cabinet repair example", service: "Carpentry", location: "Sri Lanka", image: "/images/project-kitchen-carpentry.png" },
-] as const;
-
 export const processSteps = [
   { number: "01", title: "Tell us what you need", text: "Call, WhatsApp or send the quote form with useful details and photos." },
   { number: "02", title: "Review the job", text: "We discuss the scope and arrange a site visit when it is needed." },
@@ -53,10 +45,9 @@ export const processSteps = [
 export const serviceAreas = ["Dehiwala", "Mount Lavinia", "Colombo", "Nugegoda", "Rajagiriya", "Battaramulla", "Moratuwa", "Island-wide projects"] as const;
 
 export const faqs = [
-  { question: "What types of property do you work on?", answer: "ABLE is positioned to support homes, rental properties and other suitable residential maintenance projects. Share your property type and scope so the team can confirm fit." },
-  { question: "Do you work outside Colombo?", answer: "Yes. The core service area is Colombo and nearby areas, with island-wide projects considered based on the work, timing and travel required." },
+  { question: "What types of property do you work on?", answer: "ABLE supports homeowners, landlords, property managers and businesses with suitable repair, maintenance, refurbishment and renovation work. Share the property type and scope so the team can confirm whether the job is a suitable fit." },
+  { question: "Do you work outside Colombo?", answer: "Our primary service area is Colombo and Greater Colombo. Selected projects may be undertaken island-wide depending on the work, timing and travel required." },
   { question: "Can I request several services in one visit?", answer: "Yes. List every issue in your enquiry so the work can be reviewed together and the right approach can be discussed." },
   { question: "Do you provide emergency repairs?", answer: "Urgent enquiries are welcome and assessed according to team availability, location and the nature of the issue. The website does not promise 24/7 attendance." },
   { question: "How do I get a quote?", answer: "Call, WhatsApp or complete the quote form. Photos, measurements and a clear description help with the first review; some jobs may need a site visit." },
-  { question: "Is the online form already sending messages?", answer: "Not yet. The form interface and validation are ready, but a delivery service still needs to be connected before it can send enquiries." },
 ] as const;

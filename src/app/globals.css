@@ -95,7 +95,7 @@ img { max-width: 100%; }
 .grid-texture { background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 44px 44px; }
 .dot-texture { background-image: radial-gradient(rgba(17,17,17,.12) 1px, transparent 1px); background-size: 16px 16px; }
 
-.skip-link { position: fixed; z-index: 100; top: 12px; left: 12px; transform: translateY(-150%); border-radius: 999px; background: var(--ink); color: white; padding: 12px 18px; font-weight: 800; transition: transform 180ms ease; }
+.skip-link { position: fixed; z-index: 100; top: 12px; left: 12px; transform: translateY(-150%); border-radius: 999px; background: #111111; color: #ffffff; padding: 12px 18px; font-weight: 800; transition: transform 180ms ease; }
 .skip-link:focus { transform: translateY(0); }
 :focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
 .header-quote-button { border: 1px solid #ea580c; background: #f97316 !important; color: #ffffff !important; box-shadow: 0 8px 22px rgb(249 115 22 / .2); }

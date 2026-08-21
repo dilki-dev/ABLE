@@ -9,8 +9,7 @@ import { publicConfig } from "@/cms/public-config";
 import { initialActionState } from "./action-state";
 
 type PathPart = string | number;
-type CollectionKey = "navigation" | "trustItems" | "services" | "projects" | "processSteps" | "faqs";
-type NestedCollectionPath = ["whyChoose", "reasons"] | ["testimonials", "items"];
+type CollectionKey = "navigation" | "trustItems" | "services" | "processSteps" | "faqs";
 type StringListPath = ["hero", "bullets"] | ["about", "bullets"] | ["areas", "items"];
 type LegalDocumentKey = "privacy" | "terms";
 type FieldDefinition = { key: string; label: string; multiline?: boolean; options?: readonly string[]; image?: boolean };
@@ -90,20 +89,18 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
     });
   }
 
-  function removeNestedItem(path: NestedCollectionPath, index: number) {
+  function removeWhyChooseItem(index: number) {
     setContent((current) => {
       const copy = structuredClone(current);
-      const list = path[0] === "whyChoose" ? copy.whyChoose.reasons : copy.testimonials.items;
-      list.splice(index, 1);
+      copy.whyChoose.reasons.splice(index, 1);
       return copy;
     });
   }
 
-  function addNestedItem(path: NestedCollectionPath, template: { title: string; text: string }) {
+  function addWhyChooseItem(template: { title: string; text: string }) {
     setContent((current) => {
       const copy = structuredClone(current);
-      const list = path[0] === "whyChoose" ? copy.whyChoose.reasons : copy.testimonials.items;
-      list.push(template);
+      copy.whyChoose.reasons.push(template);
       return copy;
     });
   }
@@ -146,16 +143,15 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
 
       <EditorCard title="Business details" description="Used by the header, contact area and footer." defaultOpen>
         <FieldGrid>
-          <CmsField label="Business name" value={content.business.name} onChange={(v) => updatePath(["business", "name"], v)} />
+          <ReadOnlyField label="Verified business name" value={content.business.name} />
           <CmsField label="Tagline" value={content.business.tagline} onChange={(v) => updatePath(["business", "tagline"], v)} />
-          <CmsField label="Primary phone display" value={content.business.phoneDisplay} onChange={(v) => updatePath(["business", "phoneDisplay"], v)} />
-          <CmsField label="Primary phone international" value={content.business.phoneRaw} onChange={(v) => updatePath(["business", "phoneRaw"], v)} />
-          <CmsField label="Secondary phone" value={content.business.secondaryPhoneDisplay} onChange={(v) => updatePath(["business", "secondaryPhoneDisplay"], v)} />
-          <CmsField label="Email" value={content.business.email} onChange={(v) => updatePath(["business", "email"], v)} />
-          <CmsField label="Coverage" value={content.business.coverage} onChange={(v) => updatePath(["business", "coverage"], v)} />
+          <ReadOnlyField label="Verified phone" value={content.business.phoneDisplay} />
+          <ReadOnlyField label="Verified email" value={content.business.email} />
+          <ReadOnlyField label="Verified coverage" value={content.business.coverage} />
         </FieldGrid>
         <CmsField label="Business description" value={content.business.description} multiline onChange={(v) => updatePath(["business", "description"], v)} />
-        <CmsField label="Address" value={content.business.address} multiline onChange={(v) => updatePath(["business", "address"], v)} />
+        <ReadOnlyField label="Verified address" value={content.business.address} multiline />
+        <p className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm leading-6 text-sky-950">Verified legal and contact details are locked to prevent accidental production changes. Logo, tagline and descriptive copy remain editable.</p>
         <LogoMediaField value={content.business.logoImage} name={content.business.name} tagline={content.business.tagline} width={content.business.logoWidth} height={content.business.logoHeight} footerWidth={content.business.footerLogoWidth} footerHeight={content.business.footerLogoHeight} titleSize={content.business.logoTitleSize} sloganSize={content.business.logoSloganSize} mediaReady={mediaReady} onChange={(v) => updatePath(["business", "logoImage"], v)} onWidthChange={(v) => updateLogoSize("logoWidth", v)} onHeightChange={(v) => updateLogoSize("logoHeight", v)} onFooterWidthChange={(v) => updateLogoSize("footerLogoWidth", v)} onFooterHeightChange={(v) => updateLogoSize("footerLogoHeight", v)} onTitleSizeChange={(v) => updateLogoSize("logoTitleSize", v)} onSloganSizeChange={(v) => updateLogoSize("logoSloganSize", v)} onUploadingChange={setLogoUploading} />
       </EditorCard>
 
@@ -185,17 +181,16 @@ export function ContentEditor({ initialContent, databaseReady, mediaReady, store
       </EditorCard>
 
       <CopyEditor title="Why choose us heading" value={content.whyChoose} onChange={(key, value) => updatePath(["whyChoose", key], value)} />
-      <EditorCard title="Why choose us points"><SimpleNestedCollection title="Reasons" items={content.whyChoose.reasons} maxItems={12} fields={[{ key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["whyChoose", "reasons", i, key], v)} onRemove={(i) => removeNestedItem(["whyChoose", "reasons"], i)} onAdd={() => addNestedItem(["whyChoose", "reasons"], { title: "New reason", text: "Explain this benefit clearly." })} /></EditorCard>
+      <EditorCard title="Why choose us points"><SimpleNestedCollection title="Reasons" items={content.whyChoose.reasons} maxItems={12} fields={[{ key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["whyChoose", "reasons", i, key], v)} onRemove={removeWhyChooseItem} onAdd={() => addWhyChooseItem({ title: "New reason", text: "Explain this benefit clearly." })} /></EditorCard>
 
       <CopyEditor title="Projects heading" value={content.projectsSection} onChange={(key, value) => updatePath(["projectsSection", key], value)} />
-      <CollectionEditor title="Project gallery" items={content.projects} maxItems={18} fields={[{ key: "title", label: "Title" }, { key: "service", label: "Service" }, { key: "location", label: "Location" }, { key: "image", label: "Image URL", image: true }]} mediaReady={mediaReady} onChange={(i, key, v) => updatePath(["projects", i, key], v)} onRemove={(i) => removeCollectionItem("projects", i)} onAdd={() => addCollectionItem("projects", { title: "New project", service: "Service", location: "Location", image: "/images/project-exterior-painting.png" })} />
 
       <CopyEditor title="Process heading" value={content.processSection} onChange={(key, value) => updatePath(["processSection", key], value)} />
       <CollectionEditor title="Process steps" items={content.processSteps} maxItems={8} fields={[{ key: "number", label: "Number" }, { key: "title", label: "Title" }, { key: "text", label: "Description", multiline: true }]} onChange={(i, key, v) => updatePath(["processSteps", i, key], v)} onRemove={(i) => removeCollectionItem("processSteps", i)} onAdd={() => addCollectionItem("processSteps", { number: "05", title: "New step", text: "Describe this step." })} />
 
       <EditorCard title="Testimonials">
         <CopyFields value={content.testimonials} keys={["eyebrow", "title", "description"]} multiline={["description"]} onChange={(key, value) => updatePath(["testimonials", key], value)} />
-        <SimpleNestedCollection title="Review cards" items={content.testimonials.items} maxItems={12} fields={[{ key: "title", label: "Title" }, { key: "text", label: "Review text", multiline: true }]} onChange={(i, key, v) => updatePath(["testimonials", "items", i, key], v)} onRemove={(i) => removeNestedItem(["testimonials", "items"], i)} onAdd={() => addNestedItem(["testimonials", "items"], { title: "New review", text: "Add a verified, permission-approved customer review." })} />
+        <p className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm leading-6 text-sky-950">Manage genuine testimonial records in the dedicated Testimonials section of this dashboard.</p>
       </EditorCard>
 
       <EditorCard title="Service areas">
@@ -226,6 +221,10 @@ function FieldGrid({ children }: { children: React.ReactNode }) { return <div cl
 function CmsField({ label, value, onChange, multiline = false, options }: { label: string; value: string; onChange: (value: string) => void; multiline?: boolean; options?: readonly string[] }) {
   const className = "mt-2 min-h-12 w-full rounded-xl border border-[#d9d9d4] bg-white px-3.5 py-3 text-base normal-case tracking-normal outline-none focus:border-[#38bdf8] focus:ring-4 focus:ring-sky-100 sm:text-sm";
   return <label className="block min-w-0 text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label}{options ? <select value={value} onChange={(e) => onChange(e.target.value)} className={className}>{options.map((option) => <option key={option}>{option}</option>)}</select> : multiline ? <textarea rows={4} value={value} onChange={(e) => onChange(e.target.value)} className={className} /> : <input value={value} onChange={(e) => onChange(e.target.value)} className={className} />}</label>;
+}
+
+function ReadOnlyField({ label, value, multiline = false }: { label: string; value: string; multiline?: boolean }) {
+  return <div className="block min-w-0 text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label}<div className={`mt-2 rounded-xl border border-[#e7e7e3] bg-[#f4f4f1] px-3.5 py-3 text-sm font-semibold normal-case tracking-normal text-[#4f4f4a] ${multiline ? "min-h-20 leading-6" : "min-h-12"}`}>{value}</div></div>;
 }
 
 function LogoMediaField({ value, name, tagline, width, height, footerWidth, footerHeight, titleSize, sloganSize, onChange, onWidthChange, onHeightChange, onFooterWidthChange, onFooterHeightChange, onTitleSizeChange, onSloganSizeChange, onUploadingChange, mediaReady }: { value: string; name: string; tagline: string; width: number; height: number; footerWidth: number; footerHeight: number; titleSize: number; sloganSize: number; onChange: (value: string) => void; onWidthChange: (value: number) => void; onHeightChange: (value: number) => void; onFooterWidthChange: (value: number) => void; onFooterHeightChange: (value: number) => void; onTitleSizeChange: (value: number) => void; onSloganSizeChange: (value: number) => void; onUploadingChange: (uploading: boolean) => void; mediaReady: boolean }) {

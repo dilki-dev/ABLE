@@ -1,6 +1,6 @@
 "use server";
 
-import { createHash, timingSafeEqual } from "node:crypto";
+import { compare } from "bcryptjs";
 import { revalidatePath, updateTag } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -12,26 +12,31 @@ import { hashRequestAddress } from "@/backend/enquiries";
 import { isAdminLoginRateLimited, recordAdminLoginAttempt } from "@/backend/admin-login-rate-limit";
 import { isDatabaseConfigured } from "@/backend/database";
 import { createAdminSession, deleteAdminSession, hasAdminSession, isAdminConfigured } from "@/backend/session";
+import { hasValidRequestOrigin, requestAddress } from "@/backend/request-security";
+import { isTurnstileConfigured, verifyTurnstile } from "@/backend/turnstile";
 import type { ActionState } from "@/components/admin/action-state";
+import { deleteProject, deleteTestimonial, projectInputSchema, PROJECTS_CACHE_TAG, saveProject, saveTestimonial, testimonialInputSchema, TESTIMONIALS_CACHE_TAG } from "@/backend/portfolio";
 
-function passwordsMatch(candidate: string, expected: string) {
-  const candidateDigest = createHash("sha256").update(candidate).digest();
-  const expectedDigest = createHash("sha256").update(expected).digest();
-  return timingSafeEqual(candidateDigest, expectedDigest);
+async function authorizedAdminMutation() {
+  const requestHeaders = await headers();
+  return hasValidRequestOrigin(requestHeaders) && await hasAdminSession();
 }
 
 export async function loginAction(_state: ActionState, formData: FormData): Promise<ActionState> {
-  if (!isAdminConfigured()) return { status: "error", message: "Admin login is not configured yet. Add the required Vercel environment variables." };
-  if (!isDatabaseConfigured()) return { status: "error", message: "The database must be connected before admin login is enabled." };
+  if (!isAdminConfigured() || !isDatabaseConfigured() || !isTurnstileConfigured()) return { status: "error", message: "Admin access is temporarily unavailable." };
   const password = String(formData.get("password") ?? "");
-  const expected = process.env.ADMIN_PASSWORD ?? "";
+  const turnstileToken = String(formData.get("cf-turnstile-response") ?? "");
   const requestHeaders = await headers();
-  const address = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() || requestHeaders.get("x-real-ip") || "unknown";
+  if (!hasValidRequestOrigin(requestHeaders)) return { status: "error", message: "Sign-in failed. Please try again." };
+  const address = requestAddress(requestHeaders);
   const ipHash = hashRequestAddress(address);
-  if (await isAdminLoginRateLimited(ipHash)) return { status: "error", message: "Too many sign-in attempts. Wait 15 minutes and try again." };
-  if (!passwordsMatch(password, expected)) {
+  if (await isAdminLoginRateLimited(ipHash)) return { status: "error", message: "Sign-in is temporarily restricted. Please wait and try again." };
+  const antiBotPassed = await verifyTurnstile(turnstileToken, address, "admin-login");
+  let passwordPassed = false;
+  try { passwordPassed = password.length <= 200 && await compare(password, process.env.ADMIN_PASSWORD_HASH ?? ""); } catch { passwordPassed = false; }
+  if (!antiBotPassed || !passwordPassed) {
     await recordAdminLoginAttempt(ipHash, false);
-    return { status: "error", message: "The password is incorrect." };
+    return { status: "error", message: "Sign-in failed. Check the form and try again." };
   }
   await recordAdminLoginAttempt(ipHash, true);
   await createAdminSession();
@@ -39,12 +44,13 @@ export async function loginAction(_state: ActionState, formData: FormData): Prom
 }
 
 export async function logoutAction() {
+  if (!hasValidRequestOrigin(await headers())) return;
   await deleteAdminSession();
   redirect("/admin/login");
 }
 
 export async function saveContentAction(_state: ActionState, formData: FormData): Promise<ActionState> {
-  if (!(await hasAdminSession())) return { status: "error", message: "Your admin session has expired. Sign in again." };
+  if (!(await authorizedAdminMutation())) return { status: "error", message: "Your admin session has expired. Sign in again." };
   const raw = String(formData.get("content") ?? "");
   if (!raw || raw.length > 250_000) return { status: "error", message: "The website content is empty or too large to save safely." };
 
@@ -58,7 +64,7 @@ export async function saveContentAction(_state: ActionState, formData: FormData)
     await saveSiteContent(parsed.data);
   } catch (error) {
     if (error instanceof SyntaxError) return { status: "error", message: "The content could not be read." };
-    console.error("CMS content save failed.", error);
+    console.error("CMS content save failed.", { errorType: error instanceof Error ? error.name : "UnknownError" });
     return { status: "error", message: "The database is not connected or could not save this update." };
   }
 
@@ -73,12 +79,12 @@ export async function saveContentAction(_state: ActionState, formData: FormData)
 
 const enquiryUpdateSchema = z.object({
   id: z.uuid(),
-  status: z.enum(["new", "contacted", "quoted", "closed", "spam"]),
+  status: z.enum(["new", "contacted", "quoted", "scheduled", "completed", "closed", "spam"]),
   notes: z.string().trim().max(2000),
 });
 
 export async function updateEnquiryAction(_state: ActionState, formData: FormData): Promise<ActionState> {
-  if (!(await hasAdminSession())) return { status: "error", message: "Your admin session has expired. Sign in again." };
+  if (!(await authorizedAdminMutation())) return { status: "error", message: "Your admin session has expired. Sign in again." };
   const parsed = enquiryUpdateSchema.safeParse({ id: formData.get("id"), status: formData.get("status"), notes: formData.get("notes") });
   if (!parsed.success) return { status: "error", message: "The enquiry update is invalid." };
 
@@ -94,7 +100,7 @@ export async function updateEnquiryAction(_state: ActionState, formData: FormDat
 const enquiryDeleteSchema = z.object({ id: z.uuid() });
 
 export async function deleteEnquiryAction(_state: ActionState, formData: FormData): Promise<ActionState> {
-  if (!(await hasAdminSession())) return { status: "error", message: "Your admin session has expired. Sign in again." };
+  if (!(await authorizedAdminMutation())) return { status: "error", message: "Your admin session has expired. Sign in again." };
   const parsed = enquiryDeleteSchema.safeParse({ id: formData.get("id") });
   if (!parsed.success) return { status: "error", message: "The enquiry could not be identified." };
 
@@ -106,4 +112,58 @@ export async function deleteEnquiryAction(_state: ActionState, formData: FormDat
   } catch {
     return { status: "error", message: "The enquiry could not be deleted." };
   }
+}
+
+export async function saveProjectAction(_state: ActionState, formData: FormData): Promise<ActionState> {
+  if (!(await authorizedAdminMutation())) return { status: "error", message: "Your admin session has expired. Sign in again." };
+  try {
+    const parsed = projectInputSchema.safeParse(JSON.parse(String(formData.get("project") ?? "")));
+    if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message || "Check the project fields." };
+    await saveProject(parsed.data);
+    updateTag(PROJECTS_CACHE_TAG);
+    revalidatePath("/", "page");
+    revalidatePath("/projects", "layout");
+    revalidatePath("/admin", "page");
+    revalidatePath("/sitemap.xml", "page");
+    return { status: "success", message: parsed.data.status === "published" ? "Project published." : "Project draft saved.", completedAt: Date.now() };
+  } catch (error) {
+    if (error instanceof SyntaxError) return { status: "error", message: "The project data could not be read." };
+    return { status: "error", message: "The project could not be saved. Check that its slug is unique." };
+  }
+}
+
+export async function deleteProjectAction(_state: ActionState, formData: FormData): Promise<ActionState> {
+  if (!(await authorizedAdminMutation())) return { status: "error", message: "Your admin session has expired. Sign in again." };
+  const parsed = z.uuid().safeParse(formData.get("id"));
+  if (!parsed.success) return { status: "error", message: "The project could not be identified." };
+  try {
+    if (!(await deleteProject(parsed.data))) return { status: "error", message: "This project no longer exists." };
+    updateTag(PROJECTS_CACHE_TAG); revalidatePath("/", "page"); revalidatePath("/projects", "layout"); revalidatePath("/admin", "page"); revalidatePath("/sitemap.xml", "page");
+    return { status: "success", message: "Project deleted.", completedAt: Date.now() };
+  } catch { return { status: "error", message: "The project could not be deleted." }; }
+}
+
+export async function saveTestimonialAction(_state: ActionState, formData: FormData): Promise<ActionState> {
+  if (!(await authorizedAdminMutation())) return { status: "error", message: "Your admin session has expired. Sign in again." };
+  try {
+    const parsed = testimonialInputSchema.safeParse(JSON.parse(String(formData.get("testimonial") ?? "")));
+    if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message || "Check the testimonial fields." };
+    await saveTestimonial(parsed.data);
+    updateTag(TESTIMONIALS_CACHE_TAG); revalidatePath("/", "page"); revalidatePath("/admin", "page");
+    return { status: "success", message: parsed.data.status === "published" ? "Testimonial published." : "Testimonial draft saved.", completedAt: Date.now() };
+  } catch (error) {
+    if (error instanceof SyntaxError) return { status: "error", message: "The testimonial data could not be read." };
+    return { status: "error", message: "The testimonial could not be saved." };
+  }
+}
+
+export async function deleteTestimonialAction(_state: ActionState, formData: FormData): Promise<ActionState> {
+  if (!(await authorizedAdminMutation())) return { status: "error", message: "Your admin session has expired. Sign in again." };
+  const parsed = z.uuid().safeParse(formData.get("id"));
+  if (!parsed.success) return { status: "error", message: "The testimonial could not be identified." };
+  try {
+    if (!(await deleteTestimonial(parsed.data))) return { status: "error", message: "This testimonial no longer exists." };
+    updateTag(TESTIMONIALS_CACHE_TAG); revalidatePath("/", "page"); revalidatePath("/admin", "page");
+    return { status: "success", message: "Testimonial deleted.", completedAt: Date.now() };
+  } catch { return { status: "error", message: "The testimonial could not be deleted." }; }
 }

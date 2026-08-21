@@ -21,7 +21,7 @@ export function Contact({ business, content, services }: { business: SiteContent
             <ContactLink icon={<MapPin />} label="Address" value={business.address} href={config.mapsUrl} external />
           </div>
         </Reveal>
-        <Reveal><ContactForm services={services.map((service) => service.title)} /></Reveal>
+        <Reveal><ContactForm services={services.map((service) => service.title)} turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""} antiBotReady={Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY) || (process.env.NODE_ENV !== "production" && process.env.TURNSTILE_DEV_BYPASS === "true")} /></Reveal>
       </div>
     </section>
   );

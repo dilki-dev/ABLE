@@ -3,6 +3,7 @@ import { hasAdminSession, isAdminConfigured } from "@/backend/session";
 import { isDatabaseConfigured } from "@/backend/database";
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { isTurnstileConfigured } from "@/backend/turnstile";
 
 export default async function AdminLoginPage() {
   if (await hasAdminSession()) redirect("/admin");
@@ -14,7 +15,7 @@ export default async function AdminLoginPage() {
         <p className="mt-8 text-xs font-extrabold uppercase tracking-[.18em] text-[#38bdf8]">ABLE Property Maintenance</p>
         <h1 className="mt-3 text-3xl font-black tracking-[-.04em]">Content management</h1>
         <p className="mt-3 text-sm leading-6 text-white/55">Sign in to update website content, upload project images and manage quote enquiries.</p>
-        <AdminLoginForm configured={isAdminConfigured() && isDatabaseConfigured()} />
+        <AdminLoginForm configured={isAdminConfigured() && isDatabaseConfigured() && isTurnstileConfigured()} turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""} developmentBypass={process.env.NODE_ENV !== "production" && process.env.TURNSTILE_DEV_BYPASS === "true"} />
       </div>
     </main>
   );

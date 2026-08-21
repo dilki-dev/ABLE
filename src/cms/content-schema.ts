@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { faqs, processSteps, projects, reasons, serviceAreas, services, trustItems } from "@/data/site-content";
+import { faqs, processSteps, reasons, serviceAreas, services, trustItems } from "@/data/site-content";
 import { navigation, siteConfig } from "@/lib/site-config";
 
 const shortText = z.string().trim().min(1).max(160);
@@ -33,9 +33,9 @@ export const defaultLegalPages = {
     intro: "This policy explains how ABLE Property Maintenance collects, uses and protects personal information submitted through this website or shared when you contact us.",
     lastUpdated: "21 August 2026",
     sections: [
-      { heading: "Information we collect", body: "When you request a quote or contact us, we may collect your name, telephone number, email address, requested service, property location and the details you choose to provide. We also use limited technical information, including a protected hash derived from a request address, to prevent spam and keep the enquiry service secure. Your light or dark theme choice is stored only in your browser's local storage so the website can remember your preference." },
+      { heading: "Information we collect", body: "When you request a quotation or contact us, we may collect your name, phone number, email address, WhatsApp number, property location, requested service, preferred contact method, description of the work and any additional message you provide. We also store the enquiry reference, status, submission time and internal service notes. A protected hash derived from the request address and a single-use submission token help prevent spam and duplicate enquiries. Your light or dark theme choice is stored only in your browser." },
       { heading: "How we use information", body: "We use personal information to respond to enquiries, assess requested work, prepare or discuss quotations, arrange services, maintain business records, improve customer support and protect the website from misuse. We do not sell personal information." },
-      { heading: "Service providers and disclosure", body: "We use reputable hosting, database and storage providers to operate this website. Those providers may process information on our behalf under their own security and privacy commitments. Embedded Google Maps and links to external messaging or map services are governed by those providers' privacy practices. We may also disclose information when required by law, to protect legal rights or with your permission." },
+      { heading: "Service providers and disclosure", body: "We use Vercel for hosting and media storage, Neon for database services, Cloudflare Turnstile for anti-bot verification and Google Maps for location information. If optional transactional email is configured, enquiry details may be sent through that email provider to notify ABLE after the database has saved the enquiry. Those providers process information under their own security and privacy commitments. We may also disclose information when required by law, to protect legal rights or with your permission." },
       { heading: "Retention", body: "We keep enquiry and project information only for as long as reasonably needed for customer service, quotations, work records, legal obligations and dispute prevention. Retention periods can vary according to the nature of the enquiry or service." },
       { heading: "Security and international processing", body: "We use access controls, encrypted connections and other reasonable safeguards. No internet service can guarantee absolute security. Some technology providers may process or store data outside Sri Lanka, subject to their contractual and legal safeguards." },
       { heading: "Your choices and rights", body: `You may ask to access, correct or delete personal information we hold about you, subject to applicable legal requirements and legitimate record-keeping needs. Send requests to ${siteConfig.email}. You may also contact Sri Lanka's Data Protection Authority about concerns covered by applicable data-protection law.` },
@@ -108,15 +108,15 @@ export const siteContentSchema = z.object({
     description: paragraph,
     reasons: z.array(z.object({ title: shortText, text: paragraph })).min(1).max(12),
   }),
-  projectsSection: z.object({ eyebrow: shortText, title: shortText, description: paragraph, notice: paragraph }),
-  projects: z.array(z.object({ title: shortText, service: shortText, location: shortText, image: imagePath })).min(1).max(18),
+  projectsSection: z.object({ eyebrow: shortText, title: shortText, description: paragraph, notice: z.string().trim().max(1200).default("") }),
+  projects: z.array(z.object({ title: shortText, service: shortText, location: shortText, image: imagePath })).max(18).default([]),
   processSection: z.object({ eyebrow: shortText, title: shortText, description: paragraph }),
   processSteps: z.array(z.object({ number: shortText, title: shortText, text: paragraph })).min(1).max(8),
   testimonials: z.object({
     eyebrow: shortText,
     title: shortText,
     description: paragraph,
-    items: z.array(z.object({ title: shortText, text: paragraph })).min(1).max(12),
+    items: z.array(z.object({ title: shortText, text: paragraph })).max(12).default([]),
   }),
   areas: z.object({
     eyebrow: shortText,
@@ -153,12 +153,12 @@ export const defaultSiteContent: SiteContent = siteContentSchema.parse({
     phoneRaw: siteConfig.phoneRaw,
     secondaryPhoneDisplay: siteConfig.secondaryPhoneDisplay,
     email: siteConfig.email,
-    coverage: "Colombo and projects throughout Sri Lanka",
+    coverage: "Colombo and Greater Colombo, with selected projects island-wide across Sri Lanka",
   },
   navigation: [...navigation],
   hero: {
     badge: "Emergency repair enquiries welcome",
-    location: "Colombo & throughout Sri Lanka",
+    location: "Colombo, Greater Colombo & selected projects island-wide",
     headline: "Reliable Property Care.",
     headlineAccent: "Built to Last.",
     description: siteConfig.description,
@@ -175,8 +175,8 @@ export const defaultSiteContent: SiteContent = siteContentSchema.parse({
   about: {
     eyebrow: "About ABLE",
     title: "Property care that feels clear, capable and personal",
-    description: "ABLE Property Maintenance is being built as a dependable point of contact for repairs, upkeep and thoughtful home improvements in Colombo and beyond.",
-    body: "The approach is simple: understand the issue, recommend a practical route forward and carry out the agreed work with care for the property. Whether you are a homeowner, landlord or property manager, the goal is to make maintenance easier to organise.",
+    description: "ABLE Property Maintenance provides dependable property maintenance, repair, improvement and renovation services for homeowners, landlords and businesses across Colombo, with selected projects undertaken island-wide.",
+    body: "Our approach is straightforward: understand the work required, recommend a practical route forward and complete the agreed scope with care for the property. Homeowners, landlords, property managers and commercial clients can contact one team for focused repairs, ongoing upkeep and coordinated improvements.",
     image: "/images/about-able-team.png",
     badgeLabel: "Based in",
     badgeValue: "Attidiya, Dehiwala",
@@ -188,33 +188,19 @@ export const defaultSiteContent: SiteContent = siteContentSchema.parse({
     description: "A straightforward service experience built around communication, respect and useful results.",
     reasons: [...reasons],
   },
-  projectsSection: {
-    eyebrow: "Project gallery",
-    title: "A preview of the work ABLE can showcase",
-    description: "These generated images demonstrate the intended gallery style. Replace them with verified ABLE project photos and accurate locations before presenting them as completed work.",
-    notice: "No completed projects are being claimed here. Every card is clearly marked as placeholder content.",
-  },
-  projects: [...projects],
+  projectsSection: { eyebrow: "Completed work", title: "Recent property projects", description: "Verified completed projects will appear here as they are published.", notice: "" },
+  projects: [],
   processSection: {
     eyebrow: "How it works",
     title: "A simple route from enquiry to completion",
     description: "Start with the information you have. ABLE can then help establish the right next step for the job.",
   },
   processSteps: [...processSteps],
-  testimonials: {
-    eyebrow: "Customer feedback",
-    title: "A home for verified reviews",
-    description: "This section is intentionally transparent: real customer feedback should only be added after the customer has approved the wording and attribution.",
-    items: [
-      { title: "Homeowner review placeholder", text: "Add a genuine, permission-approved customer quote here. Do not publish invented reviews." },
-      { title: "Landlord review placeholder", text: "Add a genuine, permission-approved customer quote here. Do not publish invented reviews." },
-      { title: "Property manager review placeholder", text: "Add a genuine, permission-approved customer quote here. Do not publish invented reviews." },
-    ],
-  },
+  testimonials: { eyebrow: "Customer feedback", title: "What customers say", description: "Genuine customer feedback will appear here when permission has been provided.", items: [] },
   areas: {
     eyebrow: "Service areas",
-    title: "Local to Dehiwala. Ready to discuss wider projects.",
-    description: "ABLE’s core coverage is Colombo and nearby areas, with suitable maintenance and refurbishment projects considered throughout Sri Lanka.",
+    title: "Serving Colombo and Greater Colombo",
+    description: "Our primary service area covers Colombo and Greater Colombo, with selected maintenance, refurbishment and renovation projects undertaken island-wide.",
     urgentTitle: "Urgent repair enquiry?",
     urgentText: "Call or WhatsApp with your location and issue. Attendance depends on availability and the nature of the repair.",
     items: [...serviceAreas],
