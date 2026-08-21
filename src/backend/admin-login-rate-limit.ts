@@ -17,6 +17,10 @@ export async function isAdminLoginRateLimited(ipHash: string) {
 export async function recordAdminLoginAttempt(ipHash: string, succeeded: boolean) {
   await ensureDatabaseSchema();
   const sql = getDatabase();
-  await sql`INSERT INTO admin_login_attempts (ip_hash, succeeded) VALUES (${ipHash}, ${succeeded})`;
+  if (succeeded) {
+    await sql`DELETE FROM admin_login_attempts WHERE ip_hash = ${ipHash}`;
+  } else {
+    await sql`INSERT INTO admin_login_attempts (ip_hash, succeeded) VALUES (${ipHash}, FALSE)`;
+  }
   await sql`DELETE FROM admin_login_attempts WHERE created_at < NOW() - INTERVAL '7 days'`;
 }

@@ -89,6 +89,14 @@ export async function ensureDatabaseSchema() {
       `;
       await sql`CREATE INDEX IF NOT EXISTS admin_login_attempts_ip_created_idx ON admin_login_attempts (ip_hash, created_at DESC)`;
       await sql`
+        CREATE TABLE IF NOT EXISTS admin_sessions (
+          id_hash TEXT PRIMARY KEY,
+          expires_at TIMESTAMPTZ NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `;
+      await sql`CREATE INDEX IF NOT EXISTS admin_sessions_expires_idx ON admin_sessions (expires_at)`;
+      await sql`
         CREATE TABLE IF NOT EXISTS projects (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           title TEXT NOT NULL,

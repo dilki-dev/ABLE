@@ -23,20 +23,21 @@ async function authorizedAdminMutation() {
 }
 
 export async function loginAction(_state: ActionState, formData: FormData): Promise<ActionState> {
+  const genericFailure = { status: "error" as const, message: "Unable to sign in. Please check your details and try again." };
   if (!isAdminConfigured() || !isDatabaseConfigured() || !isTurnstileConfigured()) return { status: "error", message: "Admin access is temporarily unavailable." };
   const password = String(formData.get("password") ?? "");
   const turnstileToken = String(formData.get("cf-turnstile-response") ?? "");
   const requestHeaders = await headers();
-  if (!hasValidRequestOrigin(requestHeaders)) return { status: "error", message: "Sign-in failed. Please try again." };
+  if (!hasValidRequestOrigin(requestHeaders)) return genericFailure;
   const address = requestAddress(requestHeaders);
   const ipHash = hashRequestAddress(address);
-  if (await isAdminLoginRateLimited(ipHash)) return { status: "error", message: "Sign-in is temporarily restricted. Please wait and try again." };
+  if (await isAdminLoginRateLimited(ipHash)) return genericFailure;
   const antiBotPassed = await verifyTurnstile(turnstileToken, address, "admin-login");
   let passwordPassed = false;
-  try { passwordPassed = password.length <= 200 && await compare(password, process.env.ADMIN_PASSWORD_HASH ?? ""); } catch { passwordPassed = false; }
+  try { passwordPassed = antiBotPassed && password.length > 0 && password.length <= 200 && await compare(password, process.env.ADMIN_PASSWORD_HASH ?? ""); } catch { passwordPassed = false; }
   if (!antiBotPassed || !passwordPassed) {
     await recordAdminLoginAttempt(ipHash, false);
-    return { status: "error", message: "Sign-in failed. Check the form and try again." };
+    return genericFailure;
   }
   await recordAdminLoginAttempt(ipHash, true);
   await createAdminSession();

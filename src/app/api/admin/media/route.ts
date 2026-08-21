@@ -23,7 +23,13 @@ export async function POST(request: Request) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ message: "Media storage is not configured." }, { status: 503 });
   if (Number(request.headers.get("content-length") ?? 0) > 5 * 1024 * 1024) return NextResponse.json({ message: "The upload is too large." }, { status: 413 });
 
-  const data = await request.formData();
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data")) return NextResponse.json({ message: "Use a multipart image upload." }, { status: 415 });
+  let data: FormData;
+  try {
+    data = await request.formData();
+  } catch {
+    return NextResponse.json({ message: "The upload request could not be read." }, { status: 400 });
+  }
   const file = data.get("file");
   if (!(file instanceof File)) return NextResponse.json({ message: "Choose an image file." }, { status: 400 });
   if (!(file.type in acceptedTypes)) return NextResponse.json({ message: "Use a JPG, PNG, WebP or AVIF image." }, { status: 400 });

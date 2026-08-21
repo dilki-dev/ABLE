@@ -49,4 +49,4 @@ GOOGLE_SITE_VERIFICATION=<verification token only>
 
 ## Database and media
 
-The app creates and upgrades its required tables on the first database-backed request. `database/schema.sql` is available for review. CMS images are validated and stored in the connected public Vercel Blob store; the Vercel filesystem is never used for persistent uploads.
+The app creates and upgrades its required tables on the first database-backed request. `database/schema.sql` is available for review. Admin JWTs contain a random session identifier whose HMAC is stored in Neon, allowing logout to revoke the server-side session immediately. Changing the session format or `SESSION_SECRET` intentionally requires a fresh admin sign-in. CMS images are validated and stored in the connected public Vercel Blob store; the Vercel filesystem is never used for persistent uploads.

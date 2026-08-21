@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { defaultLegalPages, defaultSiteContent, siteContentSchema, type SiteContent } from "@/cms/content-schema";
 import { siteConfig } from "@/lib/site-config";
 import { ensureDatabaseSchema, getDatabase, isDatabaseConfigured } from "./database";
+import { requireAdminSession } from "./session";
 
 export const SITE_CONTENT_CACHE_TAG = "site-content";
 
@@ -103,6 +104,7 @@ export const getFreshSiteContent = cache(async (): Promise<SiteContent> => {
 });
 
 export async function getAdminSiteContent(): Promise<AdminContentResult> {
+  await requireAdminSession();
   if (!isDatabaseConfigured()) {
     return { content: defaultSiteContent, databaseReady: false, storedContent: false, updatedAt: null, error: "DATABASE_URL is not available in this deployment." };
   }
@@ -123,6 +125,7 @@ export async function getAdminSiteContent(): Promise<AdminContentResult> {
 }
 
 export async function saveSiteContent(content: SiteContent) {
+  await requireAdminSession();
   await ensureDatabaseSchema();
   const sql = getDatabase();
   const serialized = JSON.stringify(applyProductionContentPolicy(content));

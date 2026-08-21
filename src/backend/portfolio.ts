@@ -2,7 +2,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { z } from "zod";
 import { ensureDatabaseSchema, getDatabase, isDatabaseConfigured } from "./database";
-import { hasAdminSession } from "./session";
+import { requireAdminSession } from "./session";
 
 const imagePath = z.string().trim().min(1).max(600).refine((value) => (value.startsWith("/") && !value.startsWith("//")) || /^https:\/\/[a-zA-Z0-9.-]+\.public\.blob\.vercel-storage\.com\//.test(value), "Use an uploaded image or a local /images path.");
 const galleryItemSchema = z.object({ url: imagePath, alt: z.string().trim().min(2).max(180) });
@@ -66,26 +66,22 @@ export async function getPublishedProject(slug: string) {
   return projects.find((project) => project.slug === slug) ?? null;
 }
 
-async function requireAdmin() {
-  if (!(await hasAdminSession())) throw new Error("UNAUTHORIZED");
-}
-
 export async function listAdminProjects(): Promise<Project[]> {
-  await requireAdmin();
+  await requireAdminSession();
   await ensureDatabaseSchema();
   const sql = getDatabase();
   return await sql`SELECT id, title, slug, category, location, short_description, description, cover_image, cover_alt, gallery, completion_date::text, featured, status, seo_title, seo_description, created_at, updated_at FROM projects ORDER BY updated_at DESC` as Project[];
 }
 
 export async function listAdminTestimonials(): Promise<Testimonial[]> {
-  await requireAdmin();
+  await requireAdminSession();
   await ensureDatabaseSchema();
   const sql = getDatabase();
   return await sql`SELECT id, customer_name, location, review, rating, featured, status, created_at, updated_at FROM testimonials ORDER BY updated_at DESC` as Testimonial[];
 }
 
 export async function saveProject(input: z.infer<typeof projectInputSchema>) {
-  await requireAdmin();
+  await requireAdminSession();
   await ensureDatabaseSchema();
   const sql = getDatabase();
   const gallery = JSON.stringify(input.gallery);
@@ -98,10 +94,10 @@ export async function saveProject(input: z.infer<typeof projectInputSchema>) {
   return String(rows[0].id);
 }
 
-export async function deleteProject(id: string) { await requireAdmin(); await ensureDatabaseSchema(); const sql = getDatabase(); return (await sql`DELETE FROM projects WHERE id=${id} RETURNING id`).length > 0; }
+export async function deleteProject(id: string) { await requireAdminSession(); await ensureDatabaseSchema(); const sql = getDatabase(); return (await sql`DELETE FROM projects WHERE id=${id} RETURNING id`).length > 0; }
 
 export async function saveTestimonial(input: z.infer<typeof testimonialInputSchema>) {
-  await requireAdmin();
+  await requireAdminSession();
   await ensureDatabaseSchema();
   const sql = getDatabase();
   if (input.id) {
@@ -113,4 +109,4 @@ export async function saveTestimonial(input: z.infer<typeof testimonialInputSche
   return String(rows[0].id);
 }
 
-export async function deleteTestimonial(id: string) { await requireAdmin(); await ensureDatabaseSchema(); const sql = getDatabase(); return (await sql`DELETE FROM testimonials WHERE id=${id} RETURNING id`).length > 0; }
+export async function deleteTestimonial(id: string) { await requireAdminSession(); await ensureDatabaseSchema(); const sql = getDatabase(); return (await sql`DELETE FROM testimonials WHERE id=${id} RETURNING id`).length > 0; }

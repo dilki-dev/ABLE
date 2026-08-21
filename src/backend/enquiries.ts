@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 import { ensureDatabaseSchema, getDatabase } from "./database";
+import { requireAdminSession } from "./session";
 
 const phoneNumber = z.string().trim().regex(/^[+\d][\d\s()-]{7,}$/).max(40);
 
@@ -81,6 +82,7 @@ export async function createEnquiry(input: z.infer<typeof enquirySchema>, ipHash
 }
 
 export async function listEnquiries(): Promise<Enquiry[]> {
+  await requireAdminSession();
   await ensureDatabaseSchema();
   const sql = getDatabase();
   const rows = await sql`
@@ -93,12 +95,14 @@ export async function listEnquiries(): Promise<Enquiry[]> {
 }
 
 export async function updateEnquiry(id: string, status: EnquiryStatus, notes: string) {
+  await requireAdminSession();
   await ensureDatabaseSchema();
   const sql = getDatabase();
   await sql`UPDATE enquiries SET status = ${status}, admin_notes = ${notes}, updated_at = NOW() WHERE id = ${id}`;
 }
 
 export async function deleteEnquiry(id: string) {
+  await requireAdminSession();
   await ensureDatabaseSchema();
   const sql = getDatabase();
   const rows = await sql`DELETE FROM enquiries WHERE id = ${id} RETURNING id`;
