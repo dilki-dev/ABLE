@@ -28,7 +28,7 @@ export function Header({ business, navigation, homeLinks = false }: { business: 
       </div>
       <div className="relative border-b border-[#e7e7e3] bg-white/95 backdrop-blur-lg">
         <div className="site-container flex h-[76px] items-center justify-between gap-5">
-          <Logo />
+          <Logo image={business.logoImage} name={business.name} />
           <nav aria-label="Primary navigation" className="hidden items-center gap-6 lg:flex">
             {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="text-sm font-bold text-[#4d4d48] transition hover:text-[#f97316]">{item.label}</a>)}
           </nav>

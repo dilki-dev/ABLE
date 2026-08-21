@@ -8,6 +8,7 @@ const imagePath = z.string().trim().min(1).max(600).refine(
   (value) => (value.startsWith("/") && !value.startsWith("//")) || /^https:\/\/[a-zA-Z0-9.-]+\.public\.blob\.vercel-storage\.com\//.test(value),
   "Use a local /images path or an uploaded Vercel Blob image.",
 );
+const optionalImagePath = z.union([z.literal(""), imagePath]).default("");
 const googleMapsEmbedUrl = z.string().trim().max(4000).refine((value) => {
   if (!value) return true;
   try {
@@ -62,6 +63,7 @@ export const defaultLegalPages = {
 export const siteContentSchema = z.object({
   business: z.object({
     name: shortText,
+    logoImage: optionalImagePath,
     tagline: shortText,
     description: paragraph,
     address: paragraph,
@@ -131,6 +133,7 @@ export type SiteContent = z.infer<typeof siteContentSchema>;
 export const defaultSiteContent: SiteContent = siteContentSchema.parse({
   business: {
     name: siteConfig.name,
+    logoImage: "",
     tagline: siteConfig.tagline,
     description: siteConfig.description,
     address: siteConfig.address,
