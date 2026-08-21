@@ -73,7 +73,7 @@ async function readStoredContent(): Promise<StoredContentRecord | null> {
   return { content: applyProductionContentPolicy(parsed.data), updatedAt: new Date(String(rows[0].updated_at)).toISOString() };
 }
 
-const getCachedStoredContent = unstable_cache(readStoredContent, [SITE_CONTENT_CACHE_TAG], {
+const getCachedStoredContent = unstable_cache(readStoredContent, ["site-content-v3"], {
   tags: [SITE_CONTENT_CACHE_TAG],
   revalidate: 300,
 });
@@ -87,6 +87,17 @@ export const getSiteContent = cache(async (): Promise<SiteContent> => {
     return (await getCachedStoredContent())?.content ?? defaultSiteContent;
   } catch (error) {
     console.error("Unable to load CMS content for the public website.", { errorType: error instanceof Error ? error.name : "UnknownError" });
+    return defaultSiteContent;
+  }
+});
+
+export const getFreshSiteContent = cache(async (): Promise<SiteContent> => {
+  if (!isDatabaseConfigured()) return defaultSiteContent;
+
+  try {
+    return (await readStoredContent())?.content ?? defaultSiteContent;
+  } catch (error) {
+    console.error("Unable to load fresh CMS content for a public page.", { errorType: error instanceof Error ? error.name : "UnknownError" });
     return defaultSiteContent;
   }
 });

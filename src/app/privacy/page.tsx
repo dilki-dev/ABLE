@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { getSiteContent } from "@/backend/content-repository";
+import { getFreshSiteContent } from "@/backend/content-repository";
 import { LegalPage } from "@/components/layout/legal-page";
 import { listPublishedProjects } from "@/backend/portfolio";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const content = await getSiteContent();
+  const content = await getFreshSiteContent();
   return {
     title: content.legal.privacy.title,
     description: content.legal.privacy.intro,
@@ -17,6 +17,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PrivacyPage() {
-  const [content, projects] = await Promise.all([getSiteContent(), listPublishedProjects()]);
+  const [content, projects] = await Promise.all([getFreshSiteContent(), listPublishedProjects()]);
   return <LegalPage business={content.business} navigation={content.navigation} document={content.legal.privacy} path="/privacy" hasProjects={projects.length > 0} />;
 }
