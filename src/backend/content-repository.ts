@@ -17,33 +17,49 @@ type AdminContentResult = {
 
 type StoredContentRecord = { content: SiteContent; updatedAt: string };
 
+function normalizeStoredStrings<T>(value: T): T {
+  if (typeof value === "string") {
+    return value
+      .replace(/hello@ablepropertymaintenance\.lk/gi, siteConfig.email)
+      .replace(/\+?713422304/g, siteConfig.phoneDisplay)
+      .replace(/Sri Lanka\.{2,}/g, "Sri Lanka.")
+      .replace(/65\/62\s+Kahawita Mawatha/gi, "65/62, Kahawita Mawatha") as T;
+  }
+  if (Array.isArray(value)) return value.map((item) => normalizeStoredStrings(item)) as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalizeStoredStrings(item)])) as T;
+  }
+  return value;
+}
+
 function applyProductionContentPolicy(content: SiteContent): SiteContent {
-  const privacySections = content.legal.privacy.sections.map((section) => {
+  const normalized = normalizeStoredStrings(content);
+  const privacySections = normalized.legal.privacy.sections.map((section) => {
     if (section.heading === "Information we collect" && !/WhatsApp number/i.test(section.body)) return defaultLegalPages.privacy.sections.find((item) => item.heading === section.heading) ?? section;
     if (section.heading === "Service providers and disclosure" && !/Cloudflare Turnstile/i.test(section.body)) return defaultLegalPages.privacy.sections.find((item) => item.heading === section.heading) ?? section;
     return section;
   });
   return {
-    ...content,
+    ...normalized,
     business: {
-      ...content.business,
+      ...normalized.business,
       name: siteConfig.name,
       address: siteConfig.address,
       phoneDisplay: siteConfig.phoneDisplay,
       phoneRaw: siteConfig.phoneRaw,
       secondaryPhoneDisplay: "",
       email: siteConfig.email,
-      description: /Professional maintenance, repairs and property improvements/i.test(content.business.description) ? siteConfig.description : content.business.description,
+      description: /Professional maintenance, repairs and property improvements/i.test(normalized.business.description) ? siteConfig.description : normalized.business.description,
       coverage: "Colombo and Greater Colombo, with selected projects island-wide across Sri Lanka",
     },
-    hero: { ...content.hero, description: /throughout Sri Lanka/i.test(content.hero.description) ? siteConfig.description : content.hero.description },
-    about: /being built/i.test(content.about.description) ? { ...content.about, description: defaultSiteContent.about.description, body: defaultSiteContent.about.body } : content.about,
-    projectsSection: /preview|generated|placeholder/i.test(`${content.projectsSection.title} ${content.projectsSection.description}`) ? defaultSiteContent.projectsSection : { ...content.projectsSection, notice: "" },
+    hero: { ...normalized.hero, description: /throughout Sri Lanka/i.test(normalized.hero.description) ? siteConfig.description : normalized.hero.description },
+    about: /being built/i.test(`${normalized.about.description} ${normalized.about.body}`) ? { ...normalized.about, description: defaultSiteContent.about.description, body: defaultSiteContent.about.body } : normalized.about,
+    projectsSection: /preview|generated|placeholder|no completed projects/i.test(`${normalized.projectsSection.title} ${normalized.projectsSection.description} ${normalized.projectsSection.notice}`) ? defaultSiteContent.projectsSection : { ...normalized.projectsSection, notice: "" },
     projects: [],
-    testimonials: /home for verified reviews|intentionally transparent/i.test(`${content.testimonials.title} ${content.testimonials.description}`) ? defaultSiteContent.testimonials : { ...content.testimonials, items: [] },
-    areas: /core coverage|nearby areas/i.test(content.areas.description) ? { ...content.areas, title: defaultSiteContent.areas.title, description: defaultSiteContent.areas.description } : content.areas,
-    faqs: content.faqs.filter((faq) => !/online form already sending|delivery service still needs/i.test(`${faq.question} ${faq.answer}`)).map((faq) => /is positioned|core service area is Colombo and nearby/i.test(faq.answer) ? (defaultSiteContent.faqs.find((item) => item.question === faq.question) ?? faq) : faq),
-    legal: { ...content.legal, privacy: { ...content.legal.privacy, sections: privacySections } },
+    testimonials: /home for verified reviews|intentionally transparent|review placeholder/i.test(`${normalized.testimonials.title} ${normalized.testimonials.description} ${JSON.stringify(normalized.testimonials.items)}`) ? defaultSiteContent.testimonials : { ...normalized.testimonials, items: [] },
+    areas: /core coverage|nearby areas/i.test(normalized.areas.description) ? { ...normalized.areas, title: defaultSiteContent.areas.title, description: defaultSiteContent.areas.description } : normalized.areas,
+    faqs: normalized.faqs.filter((faq) => !/online form already sending|delivery service still needs|quote form.{0,80}not connected|form interface is ready/i.test(`${faq.question} ${faq.answer}`)).map((faq) => /is positioned|core service area is Colombo and nearby/i.test(faq.answer) ? (defaultSiteContent.faqs.find((item) => item.question === faq.question) ?? faq) : faq),
+    legal: { ...normalized.legal, privacy: { ...normalized.legal.privacy, sections: privacySections } },
   };
 }
 
