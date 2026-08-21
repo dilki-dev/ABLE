@@ -35,21 +35,23 @@ export default async function AdminPage() {
     : "Not published yet";
 
   return (
-    <main className="min-h-screen bg-[#f4f4f1] text-[#111111]">
-      <header className="border-b border-[#dfdfda] bg-white">
-        <div className="mx-auto flex max-w-[1400px] flex-col gap-5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#f97316]">ABLE CMS</p><h1 className="mt-1 text-2xl font-black tracking-[-.03em]">Website administration</h1></div>
+    <main className="min-h-screen bg-[var(--soft)] text-[var(--ink)]">
+      <header className="relative overflow-hidden border-b border-white/10 bg-[#151714] text-white">
+        <div className="architectural-grid absolute inset-0 opacity-10" />
+        <div className="relative mx-auto flex max-w-[1400px] flex-col gap-5 px-5 py-7 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-orange-400">ABLE CMS</p><h1 className="mt-1 text-2xl font-black tracking-[-.03em] sm:text-3xl">Website administration</h1><p className="mt-2 text-sm text-white/55">Manage content, media and customer enquiries from one workspace.</p></div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
             <span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-extrabold ${databaseReady ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-900"}`}><Database aria-hidden="true" className="h-4 w-4" />{databaseReady ? "Database connected" : "Database setup needed"}</span>
-            <a href="/" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#dfdfda] bg-white px-4 py-2.5 text-sm font-bold hover:border-sky-300">View website <ExternalLink aria-hidden="true" className="h-4 w-4" /></a>
-            <ThemeToggle className="w-full sm:w-11" />
-            <form action={logoutAction}><button className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#111111] px-4 py-2.5 text-sm font-bold text-white"><LogOut aria-hidden="true" className="h-4 w-4" />Sign out</button></form>
+            <a href="/" target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-bold text-white hover:bg-white/10">View website <ExternalLink aria-hidden="true" className="h-4 w-4" /></a>
+            <ThemeToggle className="w-full border-white/15 bg-white/5 text-white sm:w-11" />
+            <form action={logoutAction}><button className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#151714] hover:bg-orange-50"><LogOut aria-hidden="true" className="h-4 w-4" />Sign out</button></form>
           </div>
         </div>
       </header>
-      <nav aria-label="Admin sections" className="sticky top-0 z-30 border-b border-[#dfdfda] bg-white/95 backdrop-blur"><div className="mx-auto flex max-w-[1400px] gap-2 overflow-x-auto px-4 py-2 sm:px-8">{[["Dashboard","#admin-dashboard"],["Enquiries","#admin-enquiries"],["Projects","#admin-projects"],["Testimonials","#admin-testimonials"],["Site content","#admin-site-content"]].map(([label,href]) => <a key={href} href={href} className="shrink-0 rounded-lg px-3 py-2 text-xs font-extrabold text-[#64645f] hover:bg-[#f4f4f1] hover:text-[#111111]">{label}</a>)}</div></nav>
+      <nav aria-label="Admin sections" className="sticky top-0 z-30 border-b border-[var(--line)] bg-[color:var(--surface)]/95 backdrop-blur"><div className="mx-auto flex max-w-[1400px] gap-2 overflow-x-auto px-4 py-2 sm:px-8">{[["Dashboard","#admin-dashboard"],["Enquiries","#admin-enquiries"],["Projects","#admin-projects"],["Testimonials","#admin-testimonials"],["Site content","#admin-site-content"]].map(([label,href]) => <a key={href} href={href} className="shrink-0 rounded-lg px-3 py-2 text-xs font-extrabold text-[var(--muted)] hover:bg-[var(--soft)] hover:text-[var(--ink)]">{label}</a>)}</div></nav>
       <div id="admin-dashboard" className="mx-auto max-w-[1400px] scroll-mt-20 px-4 pt-6 sm:px-8 sm:pt-8">
-        <section aria-label="Dashboard summary" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+        <div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-xs font-extrabold uppercase tracking-[.16em] text-[var(--orange)]">Overview</p><h2 className="mt-1 text-xl font-black tracking-[-.02em]">At a glance</h2></div><p className="hidden text-sm text-[var(--muted)] sm:block">Live operational status</p></div>
+        <section aria-label="Dashboard summary" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 [&>div]:rounded-2xl [&>div]:border-[var(--line)] [&>div]:bg-[var(--surface)] [&>div]:shadow-[var(--shadow-sm)]">
           <div className="rounded-2xl border border-[#dfdfda] bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Publishing</p><Clock3 aria-hidden="true" className="h-5 w-5 text-[#38bdf8]" /></div><p className="mt-3 text-sm font-black">{publishedLabel}</p><p className="mt-1 text-xs text-[#777771]">Sri Lanka time</p></div>
           <div className="rounded-2xl border border-[#dfdfda] bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Services</p><BriefcaseBusiness aria-hidden="true" className="h-5 w-5 text-[#f97316]" /></div><p className="mt-3 text-2xl font-black">{adminContent.content.services.length}</p><p className="mt-1 text-xs text-[#777771]">Published service cards</p></div>
           <div className="rounded-2xl border border-[#dfdfda] bg-white p-4 shadow-sm"><div className="flex items-center justify-between gap-3"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Enquiries</p><Inbox aria-hidden="true" className="h-5 w-5 text-[#38bdf8]" /></div><p className="mt-3 text-2xl font-black">{newEnquiries}</p><p className="mt-1 text-xs text-[#777771]">New of {enquiries.length} total</p></div>
@@ -58,7 +60,7 @@ export default async function AdminPage() {
           <div className="rounded-2xl border border-[#dfdfda] bg-white p-4 shadow-sm"><p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#777771]">Testimonials</p><p className="mt-3 text-2xl font-black">{testimonials.filter((item) => item.status === "published").length}</p><p className="mt-1 text-xs text-[#777771]">Published of {testimonials.length} total</p></div>
         </section>
       </div>
-      <div className="mx-auto grid max-w-[1400px] gap-7 px-4 py-6 sm:px-8 sm:py-8 xl:grid-cols-[minmax(0,1fr)_390px]">
+      <div className="mx-auto grid max-w-[1400px] gap-7 px-4 py-6 sm:px-8 sm:py-8 xl:grid-cols-[minmax(0,1fr)_420px]">
         <div id="admin-site-content" className="min-w-0 scroll-mt-20">
           {adminContent.error ? <div className="mb-6 flex gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><AlertTriangle aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" /><p>{adminContent.error}</p></div> : null}
           <ContentEditor initialContent={adminContent.content} databaseReady={databaseReady} mediaReady={mediaReady} storedContent={adminContent.storedContent} />

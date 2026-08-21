@@ -5,7 +5,6 @@ import { Contact } from "@/components/sections/contact";
 import { FAQ } from "@/components/sections/faq";
 import { FinalCTA } from "@/components/sections/final-cta";
 import { Hero } from "@/components/sections/hero";
-import { MapSection } from "@/components/sections/map-section";
 import { Process } from "@/components/sections/process";
 import { Projects } from "@/components/sections/projects";
 import { ServiceAreas } from "@/components/sections/service-areas";
@@ -59,9 +58,8 @@ export default async function HomePage() {
         <Projects copy={content.projectsSection} projects={projects} />
         <Process copy={content.processSection} steps={content.processSteps} />
         <Testimonials content={content.testimonials} testimonials={testimonials} />
-        <ServiceAreas content={content.areas} />
-        <FAQ copy={content.faqSection} faqs={content.faqs} />
-        <MapSection business={content.business} content={content.map} />
+        <ServiceAreas business={content.business} content={content.areas} map={content.map} />
+        <FAQ business={content.business} copy={content.faqSection} faqs={content.faqs} />
         <Contact business={content.business} content={content.contact} services={content.services} />
         <FinalCTA business={content.business} content={content.finalCta} />
       </main>

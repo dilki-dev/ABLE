@@ -81,9 +81,14 @@ export function ContactForm({ services, turnstileSiteKey, antiBotReady }: { serv
     }
   }
 
-  const inputClass = "mt-2 min-h-12 w-full rounded-xl border border-[#d9d9d4] bg-white px-4 py-3.5 text-base outline-none transition placeholder:text-stone-400 focus:border-[#38bdf8] focus:ring-4 focus:ring-sky-100 sm:text-sm";
+  const inputClass = "mt-2 min-h-12 w-full rounded-xl border border-[var(--line)] bg-[var(--canvas)] px-4 py-3.5 text-base text-[var(--ink)] outline-none transition placeholder:text-stone-400 focus:border-[var(--orange)] focus:ring-4 focus:ring-orange-100/70 sm:text-sm";
   return (
-    <form onSubmit={handleSubmit} noValidate aria-busy={status === "submitting"} className="rounded-3xl bg-white p-5 shadow-[0_25px_80px_rgba(17,17,17,.12)] sm:p-8">
+    <form onSubmit={handleSubmit} noValidate aria-busy={status === "submitting"} className="rounded-[1.75rem] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-lg)] sm:p-8 lg:p-10">
+      <div className="mb-7 border-b border-[var(--line)] pb-6">
+        <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[var(--orange)]">Tell us what you need</p>
+        <h3 className="mt-2 text-2xl font-black tracking-[-.03em] text-[var(--ink)]">Request a quotation</h3>
+        <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Share the essentials below. We will review your enquiry and contact you using your preferred method.</p>
+      </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Full name" name="name" autoComplete="name" required error={errors.name} inputClass={inputClass} />
         <Field label="Phone number" name="phone" type="tel" autoComplete="tel" required error={errors.phone} inputClass={inputClass} />
@@ -97,9 +102,9 @@ export function ContactForm({ services, turnstileSiteKey, antiBotReady }: { serv
       <label className="mt-5 block text-sm font-bold text-[#292924]">Additional message (optional)<textarea name="additionalMessage" rows={3} placeholder="Add access details or anything else that may help us review the enquiry." className={inputClass} /></label>
       <label className="mt-5 flex items-start gap-3 text-sm leading-6 text-[#4f4f4a]"><input name="consent" type="checkbox" aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? "consent-error" : undefined} className="mt-1 h-5 w-5 shrink-0 accent-[#f97316]" /><span>I agree that ABLE Property Maintenance may use these details to respond to my enquiry. See the <Link href="/privacy" className="font-bold text-sky-700 underline">Privacy Policy</Link>. <span className="text-[#f97316]">*</span>{errors.consent ? <span id="consent-error" className="mt-1 block text-xs font-semibold text-red-600">{errors.consent}</span> : null}</span></label>
       <label className="absolute -left-[9999px]" aria-hidden="true">Company<input name="company" tabIndex={-1} autoComplete="off" /></label>
-      <div className="mt-5">{turnstileSiteKey ? <TurnstileWidget siteKey={turnstileSiteKey} action="quote" /> : antiBotReady ? null : <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950">The security check is not configured. Please use the phone or WhatsApp contact option.</p>}{errors.turnstileToken ? <p className="mt-1 text-xs font-semibold text-red-600">{errors.turnstileToken}</p> : null}</div>
-      <button type="submit" disabled={status === "submitting" || !antiBotReady} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#f97316] px-5 py-4 text-sm font-extrabold text-white transition hover:bg-[#e9640e] disabled:cursor-not-allowed disabled:opacity-60">{status === "submitting" ? "Sending enquiry…" : "Request a quotation"}<Send aria-hidden="true" className="h-4 w-4" /></button>
-      {status === "success" ? <div role="status" className="mt-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm leading-6 text-green-900"><p>{message}</p><p className="mt-2 font-black">Reference: {reference}</p></div> : null}
+      <div className="mt-6 rounded-xl border border-[var(--line)] bg-[var(--soft)] p-4">{turnstileSiteKey ? <TurnstileWidget siteKey={turnstileSiteKey} action="quote" /> : antiBotReady ? null : <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-950">The security check is not configured. Please use the phone or WhatsApp contact option.</p>}{errors.turnstileToken ? <p className="mt-1 text-xs font-semibold text-red-600">{errors.turnstileToken}</p> : null}</div>
+      <button type="submit" disabled={status === "submitting" || !antiBotReady} className="btn btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-60">{status === "submitting" ? "Sending enquiry…" : "Request a quotation"}<Send aria-hidden="true" className="h-4 w-4" /></button>
+      {status === "success" ? <div role="status" className="mt-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm leading-6 text-green-900"><p className="font-extrabold">Enquiry received</p><p>{message}</p><p className="mt-2 font-black">Reference: {reference}</p></div> : null}
       {status === "error" ? <div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-900">{message}</div> : null}
     </form>
   );

@@ -19,22 +19,22 @@ export function Header({ business, navigation, homeLinks = false }: { business: 
   }, []);
 
   return (
-    <header className={`sticky top-0 z-50 transition-shadow ${scrolled ? "shadow-[0_8px_30px_rgba(17,17,17,.1)]" : ""}`}>
-      <div className="hidden bg-[#111111] py-2 text-xs text-white/75 md:block">
+    <header className={`sticky top-0 z-50 transition-[box-shadow] duration-200 ${scrolled ? "shadow-[0_12px_35px_rgba(21,23,20,.1)]" : ""}`}>
+      <div className="hidden bg-[#151714] py-2 text-xs text-white/70 md:block">
         <div className="site-container flex items-center justify-between gap-6">
-          <span className="flex min-w-0 items-center gap-2"><MapPin aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-[#38bdf8]" /><span className="truncate">{business.address}</span></span>
-          <a href={config.phoneHref} className="flex items-center gap-2 font-bold text-white hover:text-orange-300"><Phone aria-hidden="true" className="h-3.5 w-3.5" />{business.phoneDisplay}</a>
+          <span className="flex min-w-0 items-center gap-2"><MapPin aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-sky-300" /><span className="truncate">Based in Attidiya, Dehiwala · Serving Colombo &amp; Greater Colombo</span></span>
+          <a href={config.phoneHref} className="flex items-center gap-2 font-extrabold text-white transition hover:text-orange-300"><Phone aria-hidden="true" className="h-3.5 w-3.5" />{business.phoneDisplay}</a>
         </div>
       </div>
-      <div className="relative border-b border-[#e7e7e3] bg-white/95 backdrop-blur-lg">
-        <div className="site-container flex h-[76px] items-center justify-between gap-5">
+      <div className={`relative border-b bg-white/95 backdrop-blur-lg transition-colors ${scrolled ? "border-[#ddded8]" : "border-[#e7e7e3]"}`}>
+        <div className="site-container flex h-[74px] items-center justify-between gap-4 lg:h-[78px]">
           <Logo image={business.logoImage} name={business.name} tagline={business.tagline} width={business.logoWidth} height={business.logoHeight} titleSize={business.logoTitleSize} sloganSize={business.logoSloganSize} placement="header" />
-          <nav aria-label="Primary navigation" className="hidden items-center gap-6 lg:flex">
-            {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="text-sm font-bold text-[#4d4d48] transition hover:text-[#f97316]">{item.label}</a>)}
+          <nav aria-label="Primary navigation" className="hidden items-center gap-5 xl:flex">
+            {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="relative py-3 text-[13px] font-extrabold text-[#4d4f49] transition after:absolute after:inset-x-0 after:bottom-1 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#f36b16] after:transition-transform hover:text-[#151714] hover:after:scale-x-100">{item.label}</a>)}
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <a href={homeLinks ? "/#contact" : "#contact"} className="header-quote-button hidden rounded-xl px-5 py-3 text-sm font-extrabold transition lg:inline-flex">Request a quote</a>
+            <a href={homeLinks ? "/#contact" : "#contact"} className="header-quote-button hidden min-h-11 items-center rounded-xl px-5 py-3 text-sm font-extrabold transition sm:inline-flex">Request a quote</a>
             <MobileMenu business={business} navigation={navigation} homeLinks={homeLinks} />
           </div>
         </div>

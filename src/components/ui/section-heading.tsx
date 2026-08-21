@@ -12,11 +12,11 @@ export function SectionHeading({ eyebrow, title, description, align = "left", in
   return (
     <div className={`max-w-2xl ${alignment}`}>
       <p className="eyebrow">{eyebrow}</p>
-      <h2 className={`mt-4 text-3xl font-extrabold tracking-[-0.035em] sm:text-4xl lg:text-5xl ${inverted ? "text-white" : "text-[#111111]"}`}>
+      <h2 className={`section-title mt-4 ${inverted ? "text-white" : "text-[var(--ink)]"}`}>
         {title}
       </h2>
       {description ? (
-        <p className={`mt-5 text-base leading-7 sm:text-lg ${inverted ? "text-white/65" : "text-[#64645f]"}`}>
+        <p className={`mt-5 text-base leading-8 sm:text-lg ${inverted ? "text-white/65" : "text-[var(--muted)]"}`}>
           {description}
         </p>
       ) : null}

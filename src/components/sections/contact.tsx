@@ -8,17 +8,21 @@ import { publicConfig } from "@/cms/public-config";
 export function Contact({ business, content, services }: { business: SiteContent["business"]; content: SiteContent["contact"]; services: SiteContent["services"] }) {
   const config = publicConfig(business);
   return (
-    <section id="contact" className="section-space bg-[#f7f7f5]">
-      <div className="site-container grid gap-12 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
-        <Reveal>
-          <p className="eyebrow">{content.eyebrow}</p>
-          <h2 className="mt-4 text-3xl font-extrabold tracking-[-.035em] sm:text-5xl">{content.title}</h2>
-          <p className="mt-5 text-base leading-7 text-[#64645f]">{content.description}</p>
-          <div className="mt-8 space-y-5">
+    <section id="contact" className="section-space bg-[var(--soft)]">
+      <div className="site-container grid items-start gap-7 lg:grid-cols-[.78fr_1.22fr] xl:gap-10">
+        <Reveal className="relative overflow-hidden rounded-[1.75rem] bg-[#151714] p-7 text-white sm:p-10 lg:sticky lg:top-32">
+          <div className="absolute inset-0 grid-texture opacity-35" />
+          <div className="relative">
+          <p className="eyebrow text-orange-300">{content.eyebrow}</p>
+          <h2 className="mt-4 text-[clamp(2.25rem,5vw,4rem)] font-black leading-[1.02] tracking-[-.055em] text-balance">{content.title}</h2>
+          <p className="mt-5 text-base leading-8 text-white/65">{content.description}</p>
+          <div className="mt-8 space-y-3">
             <ContactLink icon={<Phone />} label="Call" value={business.phoneDisplay} href={config.phoneHref} />
             <ContactLink icon={<MessageCircle />} label="WhatsApp" value="Message ABLE" href={config.whatsappUrl} external />
             <ContactLink icon={<Mail />} label="Email" value={business.email} href={`mailto:${business.email}`} />
             <ContactLink icon={<MapPin />} label="Address" value={business.address} href={config.mapsUrl} external />
+          </div>
+          <p className="mt-8 border-t border-white/10 pt-6 text-xs font-semibold leading-6 text-white/50">Share the work, location and any useful details. ABLE will review the enquiry and confirm the appropriate next step.</p>
           </div>
         </Reveal>
         <Reveal><ContactForm services={services.map((service) => service.title)} turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""} antiBotReady={Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY) || (process.env.NODE_ENV !== "production" && process.env.TURNSTILE_DEV_BYPASS === "true")} /></Reveal>
@@ -28,5 +32,5 @@ export function Contact({ business, content, services }: { business: SiteContent
 }
 
 function ContactLink({ icon, label, value, href, external = false }: { icon: ReactElement; label: string; value: string; href: string; external?: boolean }) {
-  return <a href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined} className="flex items-start gap-4 rounded-2xl border border-[#e7e7e3] bg-white p-4 transition hover:border-orange-200"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#f97316] [&>svg]:h-5 [&>svg]:w-5">{icon}</span><span><span className="block text-xs font-extrabold uppercase tracking-[.12em] text-[#8a8a84]">{label}</span><span className="mt-1 block break-all text-sm font-bold leading-6">{value}</span></span></a>;
+  return <a href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined} className="group flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[.04] p-4 transition hover:border-orange-300/40 hover:bg-white/[.07]"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-orange-300 transition group-hover:bg-[#f36b16] group-hover:text-white [&>svg]:h-5 [&>svg]:w-5">{icon}</span><span><span className="block text-[10px] font-extrabold uppercase tracking-[.14em] text-white/40">{label}</span><span className="mt-1 block break-all text-sm font-bold leading-6 text-white/85">{value}</span></span></a>;
 }

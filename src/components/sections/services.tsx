@@ -5,10 +5,10 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function Services({ copy, services }: { copy: SiteContent["servicesSection"]; services: SiteContent["services"] }) {
   return (
-    <section id="services" className="section-space bg-[#f7f7f5]">
+    <section id="services" className="section-space bg-[var(--soft)]">
       <div className="site-container">
         <Reveal><SectionHeading eyebrow={copy.eyebrow} title={copy.title} description={copy.description} /></Reveal>
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {services.map((service, index) => <Reveal key={service.title} delay={(index % 4) * .04}><ServiceCard {...service} /></Reveal>)}
         </div>
       </div>
