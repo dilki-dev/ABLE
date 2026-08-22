@@ -87,7 +87,7 @@ export function MobileMenu({ business, navigation, homeLinks = false }: { busine
           <p id="mobile-navigation-title" className="mb-3 text-xs font-extrabold uppercase tracking-[.18em] text-orange-400">Explore ABLE</p>
           <div>
             {navigation.map((item) => (
-              <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} onClick={() => closeMenu()} className="group flex min-h-13 items-center justify-between gap-4 border-b border-white/10 py-3 text-xl font-extrabold tracking-[-.02em] text-white transition hover:text-orange-300">
+              <a key={item.href} href={homeLinks && item.href.startsWith("#") ? `/${item.href}` : item.href} onClick={() => closeMenu()} className="group flex min-h-13 items-center justify-between gap-4 border-b border-white/10 py-3 text-xl font-extrabold tracking-[-.02em] text-white transition hover:text-orange-300">
                 <span>{item.label}</span><ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-white/35 transition group-hover:translate-x-1 group-hover:text-orange-300" />
               </a>
             ))}

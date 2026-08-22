@@ -30,7 +30,7 @@ export function Header({ business, navigation, homeLinks = false }: { business: 
         <div className="site-container flex h-[68px] items-center justify-between gap-3 sm:h-[74px] lg:h-[78px]">
           <Logo image={business.logoImage} name={business.name} tagline={business.tagline} width={business.logoWidth} height={business.logoHeight} titleSize={business.logoTitleSize} sloganSize={business.logoSloganSize} placement="header" />
           <nav aria-label="Primary navigation" className="hidden items-center gap-5 xl:flex">
-            {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="relative py-3 text-[13px] font-extrabold text-[#4d4f49] transition after:absolute after:inset-x-0 after:bottom-1 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#f36b16] after:transition-transform hover:text-[#151714] hover:after:scale-x-100">{item.label}</a>)}
+            {navigation.map((item) => <a key={item.href} href={homeLinks && item.href.startsWith("#") ? `/${item.href}` : item.href} className="relative py-3 text-[13px] font-extrabold text-[#4d4f49] transition after:absolute after:inset-x-0 after:bottom-1 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#f36b16] after:transition-transform hover:text-[#151714] hover:after:scale-x-100">{item.label}</a>)}
           </nav>
           <div className="flex shrink-0 items-center gap-2">
             <ThemeToggle className="hidden xl:inline-flex" />

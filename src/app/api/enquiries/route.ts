@@ -5,6 +5,7 @@ import { getSiteContent } from "@/backend/content-repository";
 import { sendEnquiryNotification } from "@/backend/notifications";
 import { hasValidRequestOrigin, requestAddress } from "@/backend/request-security";
 import { isTurnstileConfigured, verifyTurnstile } from "@/backend/turnstile";
+import { allQuoteServices } from "@/data/specialist-services";
 
 export const runtime = "nodejs";
 const maximumRequestBytes = 24_000;
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
 
   try {
     const content = await getSiteContent();
-    if (!content.services.some((service) => service.title === parsed.data.service)) return NextResponse.json({ ok: false, message: "Please choose an available service." }, { status: 400 });
+    if (!allQuoteServices(content.services).includes(parsed.data.service)) return NextResponse.json({ ok: false, message: "Please choose an available service." }, { status: 400 });
     const saved = await createEnquiry(parsed.data, hashRequestAddress(address));
     if (saved.created) await sendEnquiryNotification({
       reference: saved.reference,

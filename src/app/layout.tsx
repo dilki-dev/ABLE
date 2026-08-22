@@ -23,8 +23,8 @@ export const viewport: Viewport = {
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getSiteContent();
-  const seoTitle = "ABLE Property Maintenance | Property Maintenance & Renovation Colombo";
-  const seoDescription = "Property maintenance, repairs and renovations for homes, landlords and businesses across Colombo and Greater Colombo, with selected projects across Sri Lanka.";
+  const seoTitle = "ABLE Property Maintenance | Repairs, Renovation & High-Rise Services Colombo";
+  const seoDescription = "Property maintenance, renovation and specialist high-rise access services for homes, businesses and managed buildings across Colombo and Greater Colombo.";
   const shareImage = "/opengraph-image";
   return {
     metadataBase: new URL(siteConfig.siteUrl),
@@ -35,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
     creator: content.business.name,
     publisher: content.business.name,
     category: "Property maintenance",
-    keywords: ["property maintenance Sri Lanka", "property repairs Colombo", "plumbing Dehiwala", "electrical repairs Colombo", "property refurbishment Sri Lanka"],
+    keywords: ["property maintenance Colombo", "property repairs Colombo", "rope access painting Colombo", "high-rise building repairs Colombo", "gondola services Colombo"],
     verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
     alternates: { canonical: "/", languages: { "en-LK": "/" } },
     formatDetection: { email: false, address: false, telephone: false },

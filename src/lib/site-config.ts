@@ -3,7 +3,7 @@ export const siteConfig = {
   shortName: "ABLE",
   tagline: "Reliable Property Care. Built to Last.",
   description:
-    "Property maintenance, repairs and renovations across Colombo and Greater Colombo, with selected projects undertaken island-wide in Sri Lanka.",
+    "Property maintenance, renovation and specialist high-rise access services across Colombo and Greater Colombo.",
   address: "65/62, Kahawita Mawatha, Attidiya, Dehiwala, Sri Lanka",
   phoneDisplay: "+94 71 304 3444",
   phoneHref: "tel:+94713043444",
@@ -20,11 +20,11 @@ export const siteConfig = {
 } as const;
 
 export const navigation = [
-  { label: "Services", href: "#services" },
+  { label: "Services", href: "/services" },
   { label: "About", href: "#about" },
   { label: "Projects", href: "#projects" },
   { label: "Process", href: "#process" },
-  { label: "Areas", href: "#areas" },
+  { label: "Areas", href: "/service-areas" },
   { label: "FAQ", href: "#faq" },
   { label: "Contact", href: "#contact" },
 ] as const;

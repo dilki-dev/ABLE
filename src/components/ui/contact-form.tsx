@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Send } from "lucide-react";
 import { resetTurnstile, TurnstileWidget } from "./turnstile-widget";
@@ -14,7 +14,15 @@ export function ContactForm({ services, turnstileSiteKey, antiBotReady }: { serv
   const [status, setStatus] = useState<FormStatus>("idle");
   const [message, setMessage] = useState("");
   const [reference, setReference] = useState("");
+  const [selectedService, setSelectedService] = useState("");
   const submissionToken = useRef("");
+
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("service");
+    if (!requested || !services.includes(requested)) return;
+    const timer = window.setTimeout(() => setSelectedService(requested), 0);
+    return () => window.clearTimeout(timer);
+  }, [services]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,6 +71,7 @@ export function ContactForm({ services, turnstileSiteKey, antiBotReady }: { serv
       const result = await response.json() as { reference?: string; message?: string; errors?: Record<string, string[]> };
       if (response.ok && result.reference) {
         formElement.reset();
+        setSelectedService("");
         submissionToken.current = "";
         setReference(result.reference);
         setMessage("Thank you. Your quotation enquiry has been received and saved securely.");
@@ -95,7 +104,7 @@ export function ContactForm({ services, turnstileSiteKey, antiBotReady }: { serv
         <Field label="Email address (optional)" name="email" type="email" autoComplete="email" error={errors.email} inputClass={inputClass} />
         <Field label="WhatsApp number if different" name="whatsapp" type="tel" autoComplete="tel" error={errors.whatsapp} inputClass={inputClass} />
         <Field label="Property location" name="location" autoComplete="street-address" required error={errors.location} inputClass={inputClass} />
-        <SelectField label="Service required" name="service" required error={errors.service} inputClass={inputClass} defaultValue="" options={services.map((service) => ({ value: service, label: service }))} placeholder="Select a service" />
+        <SelectField label="Service required" name="service" required error={errors.service} inputClass={inputClass} defaultValue="" value={selectedService} onChange={setSelectedService} options={services.map((service) => ({ value: service, label: service }))} placeholder="Select a service" />
         <SelectField label="Preferred contact method" name="preferredContactMethod" required error={errors.preferredContactMethod} inputClass={inputClass} defaultValue="phone" options={[{ value: "phone", label: "Phone call" }, { value: "whatsapp", label: "WhatsApp" }, { value: "email", label: "Email" }]} />
       </div>
       <label className="mt-5 block text-sm font-bold text-[#292924]">Description of work <span className="text-[#f97316]">*</span><textarea name="message" rows={5} placeholder="Describe what needs attention and include any useful measurements or preferred timing." aria-invalid={Boolean(errors.message)} aria-describedby={errors.message ? "message-error" : undefined} className={inputClass} />{errors.message ? <span id="message-error" className="mt-1 block text-xs font-semibold text-red-600">{errors.message}</span> : null}</label>
@@ -115,7 +124,7 @@ function Field({ label, name, type = "text", autoComplete, required = false, err
   return <label className="min-w-0 text-sm font-bold text-[#292924]">{label} {required ? <span className="text-[#f97316]">*</span> : null}<input name={name} type={type} autoComplete={autoComplete} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} className={inputClass} />{error ? <span id={errorId} className="mt-1 block text-xs font-semibold text-red-600">{error}</span> : null}</label>;
 }
 
-function SelectField({ label, name, required = false, error, inputClass, defaultValue, options, placeholder }: { label: string; name: string; required?: boolean; error?: string; inputClass: string; defaultValue: string; options: { value: string; label: string }[]; placeholder?: string }) {
+function SelectField({ label, name, required = false, error, inputClass, defaultValue, value, onChange, options, placeholder }: { label: string; name: string; required?: boolean; error?: string; inputClass: string; defaultValue: string; value?: string; onChange?: (value: string) => void; options: { value: string; label: string }[]; placeholder?: string }) {
   const errorId = `${name}-error`;
-  return <label className="min-w-0 text-sm font-bold text-[#292924]">{label} {required ? <span className="text-[#f97316]">*</span> : null}<select name={name} defaultValue={defaultValue} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} className={inputClass}>{placeholder ? <option value="" disabled>{placeholder}</option> : null}{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>{error ? <span id={errorId} className="mt-1 block text-xs font-semibold text-red-600">{error}</span> : null}</label>;
+  return <label className="min-w-0 text-sm font-bold text-[#292924]">{label} {required ? <span className="text-[#f97316]">*</span> : null}<select name={name} defaultValue={value === undefined ? defaultValue : undefined} value={value} onChange={onChange ? (event) => onChange(event.target.value) : undefined} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} className={inputClass}>{placeholder ? <option value="" disabled>{placeholder}</option> : null}{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>{error ? <span id={errorId} className="mt-1 block text-xs font-semibold text-red-600">{error}</span> : null}</label>;
 }

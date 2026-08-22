@@ -18,7 +18,7 @@ export function Footer({ business, navigation, homeLinks = false }: { business: 
         <div>
           <h2 className="text-xs font-extrabold uppercase tracking-[.18em] text-white/45">Explore</h2>
           <nav aria-label="Footer navigation" className="mt-5 space-y-3">
-            {navigation.map((item) => <a key={item.href} href={homeLinks ? `/${item.href}` : item.href} className="inline-flex min-h-11 items-center text-sm font-semibold text-white/70 hover:text-white">{item.label}</a>)}
+            {navigation.map((item) => <a key={item.href} href={homeLinks && item.href.startsWith("#") ? `/${item.href}` : item.href} className="inline-flex min-h-11 items-center text-sm font-semibold text-white/70 hover:text-white">{item.label}</a>)}
           </nav>
         </div>
         <div>

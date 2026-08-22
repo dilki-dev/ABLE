@@ -42,6 +42,7 @@ function applyProductionContentPolicy(content: SiteContent): SiteContent {
   });
   return {
     ...normalized,
+    navigation: [...defaultSiteContent.navigation],
     business: {
       ...normalized.business,
       name: siteConfig.name,

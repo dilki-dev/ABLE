@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp, ImageUp, Plus, Save, Trash2 } from "lucide-react";
 import type { Project, Testimonial } from "@/backend/portfolio";
 import { deleteProjectAction, deleteTestimonialAction, saveProjectAction, saveTestimonialAction } from "@/app/admin/actions";
 import { initialActionState } from "./action-state";
+import { specialistProjectCategories } from "@/data/specialist-services";
 
 type ProjectDraft = {
   id: string; title: string; slug: string; category: string; location: string; shortDescription: string; description: string; coverImage: string; coverAlt: string;
@@ -62,7 +63,10 @@ function TestimonialEditor({ initial, isNew = false }: { initial: TestimonialDra
 }
 
 const inputClass = "min-h-11 w-full rounded-lg border border-[#d9d9d4] bg-white px-3 py-2.5 text-base normal-case tracking-normal outline-none focus:border-sky-400 sm:text-sm";
-function EditorInput({ label, value, onChange, multiline = false, type = "text" }: { label: string; value: string; onChange: (value: string) => void; multiline?: boolean; type?: string }) { return <label className="text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label}{multiline ? <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={4} className={`${inputClass} mt-2`} /> : <input type={type} value={value} onChange={(event) => onChange(event.target.value)} className={`${inputClass} mt-2`} />}</label>; }
+function EditorInput({ label, value, onChange, multiline = false, type = "text" }: { label: string; value: string; onChange: (value: string) => void; multiline?: boolean; type?: string }) {
+  const categoryList = label === "Category" ? "project-category-options" : undefined;
+  return <label className="text-xs font-extrabold uppercase tracking-[.08em] text-[#64645f]">{label}{multiline ? <textarea value={value} onChange={(event) => onChange(event.target.value)} rows={4} className={`${inputClass} mt-2`} /> : <><input type={type} list={categoryList} value={value} onChange={(event) => onChange(event.target.value)} className={`${inputClass} mt-2`} />{categoryList ? <datalist id={categoryList}>{specialistProjectCategories.map((category) => <option key={category} value={category} />)}</datalist> : null}</>}</label>;
+}
 
 function ImageUpload({ value, onChange, mediaReady, label }: { value: string; onChange: (value: string) => void; mediaReady: boolean; label: string }) {
   const [status, setStatus] = useState(""); const [uploading, setUploading] = useState(false);

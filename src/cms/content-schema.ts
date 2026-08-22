@@ -79,7 +79,7 @@ export const siteContentSchema = z.object({
     email: z.email().max(254),
     coverage: shortText,
   }),
-  navigation: z.array(z.object({ label: shortText, href: z.string().trim().startsWith("#").max(80) })).min(1).max(12),
+  navigation: z.array(z.object({ label: shortText, href: z.string().trim().max(80).refine((value) => value.startsWith("#") || /^\/[a-z0-9/-]*$/.test(value), "Use a homepage anchor or internal path.") })).min(1).max(12),
   hero: z.object({
     badge: shortText,
     location: shortText,

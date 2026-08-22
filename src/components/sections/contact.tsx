@@ -5,7 +5,7 @@ import { Reveal } from "@/components/ui/reveal";
 import type { SiteContent } from "@/cms/content-schema";
 import { publicConfig } from "@/cms/public-config";
 
-export function Contact({ business, content, services }: { business: SiteContent["business"]; content: SiteContent["contact"]; services: SiteContent["services"] }) {
+export function Contact({ business, content, services }: { business: SiteContent["business"]; content: SiteContent["contact"]; services: readonly string[] }) {
   const config = publicConfig(business);
   return (
     <section id="contact" className="section-space bg-[var(--soft)]">
@@ -25,7 +25,7 @@ export function Contact({ business, content, services }: { business: SiteContent
           <p className="mt-8 border-t border-white/10 pt-6 text-xs font-semibold leading-6 text-white/50">Share the work, location and any useful details. ABLE will review the enquiry and confirm the appropriate next step.</p>
           </div>
         </Reveal>
-        <Reveal><ContactForm services={services.map((service) => service.title)} turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""} antiBotReady={Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY) || (process.env.NODE_ENV !== "production" && process.env.TURNSTILE_DEV_BYPASS === "true")} /></Reveal>
+        <Reveal><ContactForm services={services} turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ""} antiBotReady={Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY) || (process.env.NODE_ENV !== "production" && process.env.TURNSTILE_DEV_BYPASS === "true")} /></Reveal>
       </div>
     </section>
   );
