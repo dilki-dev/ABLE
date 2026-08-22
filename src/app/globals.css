@@ -42,7 +42,7 @@ body {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
-  font-family: var(--font-manrope), Arial, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -126,7 +126,8 @@ img { max-width: 100%; }
 .btn[aria-disabled="true"], .btn:disabled { cursor: not-allowed; opacity: .55; transform: none; }
 
 .premium-card { border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); box-shadow: 0 1px 0 rgb(21 23 20 / .02); }
-.section-title { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 850; letter-spacing: -.045em; line-height: 1.08; text-wrap: balance; }
+.font-display { font-family: var(--font-display), Georgia, serif; }
+.section-title { font-family: var(--font-display), Georgia, serif; font-size: clamp(2.25rem, 4.5vw, 4rem); font-weight: 700; letter-spacing: -.025em; line-height: 1.02; text-wrap: balance; }
 .body-copy { color: var(--muted); line-height: 1.8; }
 .floating-whatsapp { bottom: max(1.25rem, env(safe-area-inset-bottom)); }
 
@@ -138,6 +139,8 @@ img { max-width: 100%; }
 .brand-logo-image { width: var(--logo-width); height: var(--logo-height); }
 .brand-logo-title { font-size: var(--logo-title-size); line-height: 1.08; }
 .brand-logo-slogan { font-size: var(--logo-slogan-size); line-height: 1.2; }
+.footer-brand-lockup { max-width: 100%; }
+.footer-brand-lockup .brand-logo-title { font-family: var(--font-display), Georgia, serif; font-weight: 700; letter-spacing: -.01em; }
 .header-brand-lockup .brand-logo-copy { max-width: 150px; }
 .final-cta-quote-button { border: 1px solid rgb(255 255 255 / .8); background: #ffffff !important; color: #111111 !important; box-shadow: 0 10px 28px rgb(17 17 17 / .16); }
 .final-cta-quote-button:hover,
